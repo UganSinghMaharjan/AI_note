@@ -205,6 +205,35 @@ function App() {
     }
   };
 
+  const handleAddAttachment = async (noteId, file) => {
+    try {
+      const updatedNote = await noteService.addAttachment(noteId, file);
+      setNotes(notes.map((n) => (n._id === noteId ? updatedNote : n)));
+      if (selectedNote?._id === noteId) {
+        setSelectedNote(updatedNote);
+      }
+    } catch (error) {
+      console.error("Error adding attachment:", error);
+      alert("Failed to upload attachment.");
+    }
+  };
+
+  const handleRemoveAttachment = async (noteId, attachmentId) => {
+    try {
+      const updatedNote = await noteService.removeAttachment(
+        noteId,
+        attachmentId
+      );
+      setNotes(notes.map((n) => (n._id === noteId ? updatedNote : n)));
+      if (selectedNote?._id === noteId) {
+        setSelectedNote(updatedNote);
+      }
+    } catch (error) {
+      console.error("Error removing attachment:", error);
+      alert("Failed to remove attachment.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg-base">
@@ -246,6 +275,8 @@ function App() {
         note={selectedNote}
         onUpdateNote={handleUpdateNote}
         saveStatus={saveStatus}
+        onAddAttachment={handleAddAttachment}
+        onRemoveAttachment={handleRemoveAttachment}
       />
 
       <ConfirmationModal

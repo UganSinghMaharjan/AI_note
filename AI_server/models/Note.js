@@ -16,6 +16,15 @@ const noteSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  attachments: [
+    {
+      name: String,
+      url: String,
+      path: String,
+      size: Number,
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
