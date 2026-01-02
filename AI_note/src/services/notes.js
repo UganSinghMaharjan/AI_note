@@ -38,4 +38,41 @@ const bulkRemove = async (count) => {
   return response.data;
 };
 
-export default { getAll, create, update, remove, bulkRemove, setToken };
+const addAttachment = async (noteId, file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const config = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: token,
+    },
+  };
+
+  const response = await axios.post(
+    `${API_URL}/${noteId}/attachments`,
+    formData,
+    config
+  );
+  return response.data;
+};
+
+const removeAttachment = async (noteId, attachmentId) => {
+  const config = { headers: { Authorization: token } };
+  const response = await axios.delete(
+    `${API_URL}/${noteId}/attachments/${attachmentId}`,
+    config
+  );
+  return response.data;
+};
+
+export default {
+  getAll,
+  create,
+  update,
+  remove,
+  setToken,
+  bulkRemove,
+  addAttachment,
+  removeAttachment,
+};
