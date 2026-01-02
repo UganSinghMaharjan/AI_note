@@ -58,6 +58,13 @@ const Sidebar = ({
     setIsSettingsOpen(false);
   };
 
+  // Helper to determine if image is local or external
+  const getProfilePicture = (picture) => {
+    if (!picture) return "https://ui-avatars.com/api/?name=" + user.name;
+    if (picture.startsWith("http")) return picture;
+    return `http://localhost:5000${picture}`;
+  };
+
   return (
     <aside className="w-[320px] h-full flex flex-col glass-panel relative z-10 transition-all duration-300">
       {/* ... header and notes ... */}
@@ -208,7 +215,7 @@ const Sidebar = ({
           <div className="flex items-center justify-between p-2 rounded-2xl bg-white/5 hover:bg-white/10 transition-all duration-300 border border-transparent hover:border-white/5">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <img
-                src={user.picture}
+                src={getProfilePicture(user.picture)}
                 alt={user.name}
                 className="w-9 h-9 rounded-full border border-white/20 shadow-inner"
                 referrerPolicy="no-referrer"

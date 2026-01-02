@@ -7,6 +7,7 @@ import AboutModal from "./components/AboutModal";
 import ProfileModal from "./components/ProfileModal";
 import LoginPage from "./components/LoginPage";
 import noteService from "./services/notes";
+import userService from "./services/user";
 import axios from "axios";
 import "./index.css";
 
@@ -50,6 +51,7 @@ function App() {
       const user = JSON.parse(loggedUserJSON);
       setUser(user);
       noteService.setToken(user.token);
+      userService.setToken(user.token);
     }
     setLoading(false);
   }, []);
@@ -181,6 +183,28 @@ function App() {
     }
   };
 
+  const handleUpdateProfile = async (file) => {
+    try {
+      const response = await userService.updateProfile(file);
+      const updatedUser = {
+        ...user,
+        user: {
+          ...user.user,
+          picture: response.user.picture,
+        },
+      };
+
+      setUser(updatedUser);
+      window.localStorage.setItem(
+        "loggedNoteAppUser",
+        JSON.stringify(updatedUser)
+      );
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile picture.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg-base">
@@ -245,6 +269,7 @@ function App() {
         onClose={() => setIsProfileOpen(false)}
         user={user.user}
         totalNotes={notes.length}
+        onUpdateProfile={handleUpdateProfile}
       />
     </div>
   );
