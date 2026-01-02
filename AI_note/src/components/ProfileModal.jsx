@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaUser,
@@ -7,10 +7,50 @@ import {
   FaCalendarAlt,
   FaStickyNote,
   FaGoogle,
+  FaCamera,
+  FaCheckCircle,
 } from "react-icons/fa";
 
-const ProfileModal = ({ isOpen, onClose, user, totalNotes }) => {
+const ProfileModal = ({
+  isOpen,
+  onClose,
+  user,
+  totalNotes,
+  onUpdateProfile,
+}) => {
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
   if (!user) return null;
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        setIsUploading(true);
+        setShowSuccess(false);
+        await onUpdateProfile(file);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+      } catch (error) {
+        console.error("Failed to upload image:", error);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  // Helper to determine if image is local or external
+  const getProfilePicture = (picture) => {
+    if (!picture) return "https://ui-avatars.com/api/?name=" + user.name;
+    if (picture.startsWith("http")) return picture;
+    return `http://localhost:5000${picture}`;
+  };
 
   return (
     <AnimatePresence>
@@ -43,12 +83,55 @@ const ProfileModal = ({ isOpen, onClose, user, totalNotes }) => {
             {/* Profile Info */}
             <div className="px-8 pb-8 -mt-12 text-center">
               <div className="relative inline-block">
-                <img
-                  src={user.picture}
-                  alt={user.name}
-                  className="w-24 h-24 rounded-full border-4 border-bg-surface shadow-2xl"
-                  referrerPolicy="no-referrer"
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={handleImageClick}
+                >
+                  <img
+                    src={getProfilePicture(user.picture)}
+                    alt={user.name}
+                    className={`w-24 h-24 rounded-full border-4 border-bg-surface shadow-2xl transition-all duration-300 ${
+                      isUploading
+                        ? "opacity-50 grayscale"
+                        : "group-hover:brightness-75"
+                    }`}
+                    referrerPolicy="no-referrer"
+                  />
+                  {!isUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <FaCamera className="text-white text-xl drop-shadow-lg" />
+                    </div>
+                  )}
+                  {isUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                  <AnimatePresence>
+                    {showSuccess && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        className="absolute inset-0 flex flex-col items-center justify-center bg-accent/80 rounded-full backdrop-blur-sm z-20"
+                      >
+                        <FaCheckCircle className="text-white text-3xl mb-1 shadow-lg" />
+                        <span className="text-[0.6rem] text-white font-bold uppercase tracking-wider">
+                          Updated!
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleFileChange}
                 />
+
                 <div className="absolute bottom-1 right-1 p-1.5 bg-accent rounded-full border-2 border-bg-surface shadow-lg">
                   <FaGoogle className="text-[10px] text-[#1a1a1a]" />
                 </div>
