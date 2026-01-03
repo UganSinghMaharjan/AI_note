@@ -100,6 +100,7 @@ router.post("/", async (req, res) => {
   const note = new Note({
     title: req.body.title || "Untitled",
     content: req.body.content || "",
+    folder: req.body.folder || "General",
     tags: req.body.tags || [],
     user: req.userId,
   });
@@ -120,6 +121,7 @@ router.patch("/:id", async (req, res) => {
 
     if (req.body.title != null) note.title = req.body.title;
     if (req.body.content != null) note.content = req.body.content;
+    if (req.body.folder != null) note.folder = req.body.folder;
     if (req.body.tags != null) note.tags = req.body.tags;
 
     const updatedNote = await note.save();

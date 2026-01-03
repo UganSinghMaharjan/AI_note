@@ -23,9 +23,11 @@ const Editor = ({
   saveStatus,
   onAddAttachment,
   onRemoveAttachment,
+  darkMode,
 }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [folder, setFolder] = useState("");
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -33,23 +35,30 @@ const Editor = ({
     if (note) {
       setTitle(note.title);
       setContent(note.content);
+      setFolder(note.folder || "General");
     }
   }, [note]);
 
   // Debounce changes
   useEffect(() => {
     if (!note) return;
-    if (title === note.title && content === note.content) return;
+    if (
+      title === note.title &&
+      content === note.content &&
+      folder === (note.folder || "General")
+    )
+      return;
 
     const timeoutId = setTimeout(() => {
-      onUpdateNote({ ...note, title, content });
+      onUpdateNote({ ...note, title, content, folder });
     }, 1500);
 
     return () => clearTimeout(timeoutId);
-  }, [title, content]);
+  }, [title, content, folder]);
 
   const handleTitleChange = (e) => setTitle(e.target.value);
   const handleContentChange = (e) => setContent(e.target.value);
+  const handleFolderChange = (e) => setFolder(e.target.value);
 
   const handleFileClick = () => fileInputRef.current?.click();
 
@@ -108,16 +117,16 @@ const Editor = ({
           <motion.div
             animate={{
               y: [0, -20, 0],
-              opacity: [0.1, 0.2, 0.1],
+              opacity: darkMode ? [0.1, 0.2, 0.1] : [0.05, 0.12, 0.05],
               scale: [1, 1.1, 1],
             }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent/10 rounded-full blur-[100px]"
+            className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent/20 rounded-full blur-[100px]"
           />
           <motion.div
             animate={{
               y: [0, 20, 0],
-              opacity: [0.05, 0.15, 0.05],
+              opacity: darkMode ? [0.05, 0.15, 0.05] : [0.03, 0.08, 0.03],
               scale: [1, 1.2, 1],
             }}
             transition={{
@@ -126,7 +135,7 @@ const Editor = ({
               ease: "easeInOut",
               delay: 2,
             }}
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]"
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-[120px]"
           />
         </div>
 
@@ -140,7 +149,11 @@ const Editor = ({
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="text-9xl filter drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]"
+              className={`text-9xl filter ${
+                darkMode
+                  ? "drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]"
+                  : "drop-shadow-[0_0_30px_rgba(0,0,0,0.05)]"
+              }`}
             >
               📝
             </motion.div>
@@ -162,7 +175,7 @@ const Editor = ({
             </motion.div>
           </div>
 
-          <h2 className="text-4xl font-bold mb-4 tracking-tight bg-gradient-to-r from-white via-white to-white/40 bg-clip-text text-transparent italic">
+          <h2 className="text-4xl font-bold mb-4 tracking-tight bg-gradient-to-r from-text-main via-text-main to-text-main/40 bg-clip-text text-transparent italic">
             Your Creative Space
           </h2>
           <p className="text-xl text-text-muted/60 max-w-sm mb-12 font-medium leading-relaxed">
@@ -220,26 +233,44 @@ const Editor = ({
       </div>
 
       {/* Editor Header */}
-      <div className="px-12 pb-4 pt-10 flex justify-between items-center group">
-        <input
-          type="text"
-          value={title}
-          onChange={handleTitleChange}
-          placeholder="Note Title"
-          className="text-5xl font-bold flex-1 bg-transparent border-none outline-none text-text-main placeholder:text-text-muted/20 tracking-tight"
-        />
-        <button
-          onClick={handleFileClick}
-          disabled={isUploading}
-          className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-text-muted hover:text-white transition-all duration-300 flex items-center gap-2 shadow-sm"
-        >
-          {isUploading ? (
-            <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <FaPaperclip className="text-accent/70" />
-          )}
-          <span className="text-sm font-semibold">Attach</span>
-        </button>
+      <div className="px-12 pb-4 pt-10 flex flex-col gap-4 group">
+        <div className="flex justify-between items-center gap-4">
+          <input
+            type="text"
+            value={title}
+            onChange={handleTitleChange}
+            placeholder="Note Title"
+            className="text-5xl font-bold flex-1 bg-transparent border-none outline-none text-text-main placeholder:text-text-muted/20 tracking-tight"
+          />
+          <button
+            onClick={handleFileClick}
+            disabled={isUploading}
+            className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-text-muted hover:text-white transition-all duration-300 flex items-center gap-2 shadow-sm"
+          >
+            {isUploading ? (
+              <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <FaPaperclip className="text-accent/70" />
+            )}
+            <span className="text-sm font-semibold">Attach</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2 transition-all duration-300 hover:bg-white/10">
+            <span className="text-[10px] font-bold text-text-muted/40 uppercase tracking-widest">
+              Folder
+            </span>
+            <input
+              type="text"
+              value={folder}
+              onChange={handleFolderChange}
+              placeholder="General"
+              className="bg-transparent border-none outline-none text-xs font-semibold text-accent/80 min-w-[100px] w-auto placeholder:text-text-muted/20"
+            />
+          </div>
+        </div>
+
         <input
           type="file"
           ref={fileInputRef}
@@ -257,7 +288,11 @@ const Editor = ({
           className="flex-1 bg-transparent border-none resize-none outline-none text-lg leading-relaxed text-text-main/90 font-mono h-full placeholder:text-text-muted/30 focus:placeholder:text-text-muted/50 transition-colors"
         />
         <div className="flex-1 overflow-y-auto pl-12 border-l border-white/5 markdown-preview scroll-smooth">
-          <article className="prose prose-invert prose-lg max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-p:text-text-muted/90 prose-a:text-accent prose-code:text-accent prose-pre:bg-bg-surface prose-pre:border prose-pre:border-white/5">
+          <article
+            className={`prose ${
+              darkMode ? "prose-invert" : ""
+            } prose-lg max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-p:text-text-muted/90 prose-a:text-accent prose-code:text-accent prose-pre:bg-bg-surface prose-pre:border prose-pre:border-white/5`}
+          >
             <ReactMarkdown>{content}</ReactMarkdown>
           </article>
         </div>
@@ -280,7 +315,7 @@ const Editor = ({
                   {getFileIcon(file.name)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate leading-tight">
+                  <p className="text-sm font-semibold text-text-main truncate leading-tight">
                     {file.name}
                   </p>
                   <p className="text-[0.65rem] text-text-muted/40 font-bold uppercase tracking-tighter">

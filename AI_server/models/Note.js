@@ -9,6 +9,10 @@ const noteSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  folder: {
+    type: String,
+    default: "General",
+  },
   tags: [String],
   summary: String,
   user: {

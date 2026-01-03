@@ -58,6 +58,7 @@ router.put(
           name: user.name,
           email: user.email,
           picture: user.picture,
+          folders: user.folders,
         },
       });
     } catch (error) {
@@ -66,5 +67,49 @@ router.put(
     }
   }
 );
+
+// Add Folder
+router.post("/folders", authMiddleware, async (req, res) => {
+  try {
+    const { folderName } = req.body;
+    if (!folderName) {
+      return res.status(400).json({ message: "Folder name is required" });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.folders.includes(folderName)) {
+      return res.status(400).json({ message: "Folder already exists" });
+    }
+
+    user.folders.push(folderName);
+    await user.save();
+
+    res.json({ folders: user.folders });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete Folder
+router.delete("/folders/:folderName", authMiddleware, async (req, res) => {
+  try {
+    const { folderName } = req.params;
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.folders = user.folders.filter((f) => f !== folderName);
+    await user.save();
+
+    res.json({ folders: user.folders });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 export default router;

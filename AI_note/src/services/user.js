@@ -34,4 +34,34 @@ const updateProfile = async (file) => {
   return response.data;
 };
 
-export default { setToken, updateProfile, login, register };
+const addFolder = async (folderName) => {
+  const config = {
+    headers: { Authorization: token },
+  };
+  const response = await axios.post(
+    `${USERS_URL}/folders`,
+    { folderName },
+    config
+  );
+  return response.data;
+};
+
+const deleteFolder = async (folderName) => {
+  const config = {
+    headers: { Authorization: token },
+  };
+  const response = await axios.delete(
+    `${USERS_URL}/folders/${folderName}`,
+    config
+  );
+  return response.data;
+};
+
+export default {
+  setToken,
+  updateProfile,
+  login,
+  register,
+  addFolder,
+  deleteFolder,
+};

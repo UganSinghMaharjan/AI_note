@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import userService from "../services/user";
 import { HiMail, HiLockClosed, HiUser, HiArrowLeft } from "react-icons/hi";
 
-const LoginPage = ({ onLoginSuccess, onLoginError, onBack }) => {
+const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -89,7 +89,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack }) => {
           )}
 
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-text-main to-text-main/60 bg-clip-text text-transparent">
               {isSignUp ? "Create an Account" : "Welcome Back"}
             </h1>
             <p className="text-text-muted mt-2">
@@ -175,7 +175,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-accent hover:bg-accent-hover disabled:bg-accent/50 text-white rounded-xl font-bold transition-all shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
+              className="w-full py-4 bg-accent hover:bg-accent-hover disabled:bg-accent/50 text-[#1a1a1a] rounded-xl font-bold transition-all shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -201,7 +201,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack }) => {
                 onLoginError(error);
               }}
               useOneTap
-              theme="filled_black"
+              theme={darkMode ? "filled_black" : "filled_blue"}
               shape="pill"
             />
           </div>
@@ -209,7 +209,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack }) => {
           <div className="mt-10 text-center">
             <button
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-text-muted hover:text-white transition-colors"
+              className="text-text-muted hover:text-text-main transition-colors"
             >
               {isSignUp ? (
                 <>
