@@ -10,6 +10,12 @@ import {
   FaTimes,
   FaPlus,
 } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  HiOutlineSparkles,
+  HiOutlinePencilAlt,
+  HiOutlineLightningBolt,
+} from "react-icons/hi";
 
 const Editor = ({
   note,
@@ -85,15 +91,100 @@ const Editor = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
 
-  if (!note)
+  if (!note) {
+    const tips = [
+      "Use Markdown for better organization.",
+      "Stay focused, stay productive.",
+      "Your ideas deserve to be captured.",
+      "A clear mind leads to clear notes.",
+      "Organize your thoughts, change the world.",
+    ];
+    const randomTip = tips[Math.floor(Date.now() / 86400000) % tips.length];
+
     return (
-      <div className="flex-1 flex flex-col items-center justify-center opacity-40 select-none">
-        <div className="text-8xl mb-8 animate-pulse text-white/5">📝</div>
-        <h2 className="text-2xl font-semibold text-text-muted">
-          Select or create a note
-        </h2>
+      <div className="flex-1 relative flex flex-col items-center justify-center overflow-hidden bg-bg-base">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <motion.div
+            animate={{
+              y: [0, -20, 0],
+              opacity: [0.1, 0.2, 0.1],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent/10 rounded-full blur-[100px]"
+          />
+          <motion.div
+            animate={{
+              y: [0, 20, 0],
+              opacity: [0.05, 0.15, 0.05],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2,
+            }}
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]"
+          />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative z-10 flex flex-col items-center text-center px-6"
+        >
+          <div className="relative mb-12">
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="text-9xl filter drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]"
+            >
+              📝
+            </motion.div>
+
+            {/* Floating Icons */}
+            <motion.div
+              animate={{ y: [0, -10, 0], x: [0, 5, 0] }}
+              transition={{ duration: 4, repeat: Infinity }}
+              className="absolute -top-4 -right-4 w-10 h-10 bg-accent/20 backdrop-blur-md rounded-xl border border-white/10 flex items-center justify-center text-accent shadow-lg"
+            >
+              <HiOutlineSparkles size={20} />
+            </motion.div>
+            <motion.div
+              animate={{ y: [0, 10, 0], x: [0, -5, 0] }}
+              transition={{ duration: 6, repeat: Infinity, delay: 1 }}
+              className="absolute -bottom-2 -left-6 w-12 h-12 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center text-text-muted/40 shadow-xl"
+            >
+              <HiOutlinePencilAlt size={24} />
+            </motion.div>
+          </div>
+
+          <h2 className="text-4xl font-bold mb-4 tracking-tight bg-gradient-to-r from-white via-white to-white/40 bg-clip-text text-transparent italic">
+            Your Creative Space
+          </h2>
+          <p className="text-xl text-text-muted/60 max-w-sm mb-12 font-medium leading-relaxed">
+            Select a note to start editing or create a new one to capture your
+            next big idea.
+          </p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="py-3 px-6 bg-white/[0.03] border border-white/5 rounded-2xl backdrop-blur-sm flex items-center gap-3 group hover:border-accent/30 transition-colors"
+          >
+            <HiOutlineLightningBolt className="text-accent/50 group-hover:text-accent transition-colors" />
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-text-muted/40 group-hover:text-text-muted/60 transition-colors">
+              Tip: {randomTip}
+            </span>
+          </motion.div>
+        </motion.div>
       </div>
     );
+  }
 
   return (
     <main className="flex-1 flex flex-col h-full relative overflow-hidden">
