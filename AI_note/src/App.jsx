@@ -271,6 +271,7 @@ function App() {
         onOpenProfile={() => setIsProfileOpen(true)}
         user={user.user}
         selectedNoteId={selectedNote?._id}
+        onReorder={setNotes}
       />
 
       <Editor

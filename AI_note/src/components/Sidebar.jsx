@@ -10,7 +10,7 @@ import {
   FaInfoCircle,
   FaTimes,
 } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 
 const Sidebar = ({
   notes,
@@ -23,6 +23,7 @@ const Sidebar = ({
   onOpenProfile,
   user,
   selectedNoteId,
+  onReorder,
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -105,7 +106,7 @@ const Sidebar = ({
       </div>
 
       {/* Notes List */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
         {filteredNotes.length === 0 ? (
           <div className="p-8 text-center flex flex-col items-center gap-3 opacity-50">
             <span className="text-4xl">{searchQuery ? "🔍" : "📝"}</span>
@@ -113,55 +114,129 @@ const Sidebar = ({
               {searchQuery ? "No matches found" : "No notes yet"}
             </p>
           </div>
-        ) : (
-          filteredNotes.map((note) => (
-            <div
-              key={note._id}
-              onClick={() => onSelectNote(note)}
-              className={`group p-4 rounded-xl cursor-pointer transition-all duration-200 border relative overflow-hidden ${
-                selectedNoteId === note._id
-                  ? "bg-white/10 border-accent/30 shadow-lg"
-                  : "bg-transparent border-transparent hover:bg-white/5 hover:translate-x-1"
-              }`}
-            >
-              {/* Active Indicator */}
-              {selectedNoteId === note._id && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_10px_theme(colors.accent)]" />
-              )}
+        ) : searchQuery ? (
+          /* Static List when searching to avoid reordering confusion */
+          <div className="space-y-2">
+            {filteredNotes.map((note) => (
+              <div
+                key={note._id}
+                onClick={() => onSelectNote(note)}
+                className={`group p-4 rounded-xl cursor-pointer border relative overflow-hidden transition-colors duration-200 ${
+                  selectedNoteId === note._id
+                    ? "bg-white/10 border-accent/30 shadow-lg"
+                    : "bg-transparent border-transparent hover:bg-white/5"
+                }`}
+              >
+                {/* Active Indicator */}
+                {selectedNoteId === note._id && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_10px_theme(colors.accent)]" />
+                )}
 
-              <div className="flex justify-between items-start gap-2">
-                <h3
-                  className={`text-[0.95rem] font-semibold mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis transition-colors flex-1 ${
-                    selectedNoteId === note._id
-                      ? "text-white"
-                      : "text-text-main/90 group-hover:text-white"
-                  }`}
-                >
-                  {note.title || "Untitled"}
-                </h3>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteNote(note._id);
-                  }}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-md text-text-muted hover:text-red-400 transition-all duration-200"
-                  title="Delete Note"
-                >
-                  <FaTrash className="text-xs" />
-                </button>
+                <div className="flex justify-between items-start gap-2">
+                  <h3
+                    className={`text-[0.95rem] font-semibold mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis transition-colors flex-1 ${
+                      selectedNoteId === note._id
+                        ? "text-white"
+                        : "text-text-main/90 group-hover:text-white"
+                    }`}
+                  >
+                    {note.title || "Untitled"}
+                  </h3>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteNote(note._id);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-md text-text-muted hover:text-red-400 transition-all duration-200"
+                    title="Delete Note"
+                  >
+                    <FaTrash className="text-xs" />
+                  </button>
+                </div>
+
+                <p className="text-xs text-text-muted/70 whitespace-nowrap overflow-hidden text-ellipsis font-medium">
+                  {note.content ? note.content.substring(0, 50) : "No content"}
+                </p>
+                <span className="text-[0.65rem] text-text-muted/40 mt-3 block font-mono tracking-wide">
+                  {new Date(note.updatedAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
               </div>
+            ))}
+          </div>
+        ) : (
+          /* Reorderable List when not searching */
+          <Reorder.Group
+            axis="y"
+            values={notes}
+            onReorder={onReorder}
+            className="space-y-2"
+          >
+            {notes.map((note) => (
+              <Reorder.Item
+                value={note}
+                key={note._id}
+                layout
+                transition={{
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 50,
+                  mass: 1,
+                }}
+                whileDrag={{
+                  scale: 1.02,
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  borderColor: "rgba(255, 255, 255, 0.2)",
+                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                }}
+                onClick={() => onSelectNote(note)}
+                className={`group p-4 rounded-xl cursor-pointer border relative overflow-hidden transition-colors duration-200 ${
+                  selectedNoteId === note._id
+                    ? "bg-white/10 border-accent/30 shadow-lg"
+                    : "bg-transparent border-transparent hover:bg-white/5"
+                }`}
+              >
+                {/* Active Indicator */}
+                {selectedNoteId === note._id && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent shadow-[0_0_10px_theme(colors.accent)]" />
+                )}
 
-              <p className="text-xs text-text-muted/70 whitespace-nowrap overflow-hidden text-ellipsis font-medium">
-                {note.content ? note.content.substring(0, 50) : "No content"}
-              </p>
-              <span className="text-[0.65rem] text-text-muted/40 mt-3 block font-mono tracking-wide">
-                {new Date(note.updatedAt).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
-          ))
+                <div className="flex justify-between items-start gap-2">
+                  <h3
+                    className={`text-[0.95rem] font-semibold mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis transition-colors flex-1 ${
+                      selectedNoteId === note._id
+                        ? "text-white"
+                        : "text-text-main/90 group-hover:text-white"
+                    }`}
+                  >
+                    {note.title || "Untitled"}
+                  </h3>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteNote(note._id);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-white/10 rounded-md text-text-muted hover:text-red-400 transition-all duration-200"
+                    title="Delete Note"
+                  >
+                    <FaTrash className="text-xs" />
+                  </button>
+                </div>
+
+                <p className="text-xs text-text-muted/70 whitespace-nowrap overflow-hidden text-ellipsis font-medium">
+                  {note.content ? note.content.substring(0, 50) : "No content"}
+                </p>
+                <span className="text-[0.65rem] text-text-muted/40 mt-3 block font-mono tracking-wide">
+                  {new Date(note.updatedAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
         )}
       </div>
 
