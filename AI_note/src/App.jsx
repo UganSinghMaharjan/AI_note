@@ -6,9 +6,12 @@ import DataManagementModal from "./components/DataManagementModal";
 import AboutModal from "./components/AboutModal";
 import ProfileModal from "./components/ProfileModal";
 import LoginPage from "./components/LoginPage";
+import LandingPage from "./components/LandingPage";
 import noteService from "./services/notes";
 import userService from "./services/user";
 import axios from "axios";
+import useSessionTimeout from "./hooks/useSessionTimeout";
+import { AnimatePresence, motion } from "framer-motion";
 import "./index.css";
 
 function App() {
@@ -16,6 +19,7 @@ function App() {
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAuth, setShowAuth] = useState(false);
 
   // Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -29,23 +33,6 @@ function App() {
 
   // Check for existing user on load
   useEffect(() => {
-    // MOCK USER FOR VERIFICATION - REMOVE LATER
-    if (!window.localStorage.getItem("loggedNoteAppUser")) {
-      const mockUser = {
-        token: "mock-token",
-        user: {
-          name: "John Doe",
-          email: "john@example.com",
-          picture: "https://ui-avatars.com/api/?name=John+Doe",
-        },
-      };
-      window.localStorage.setItem(
-        "loggedNoteAppUser",
-        JSON.stringify(mockUser)
-      );
-      setUser(mockUser);
-    }
-
     const loggedUserJSON = window.localStorage.getItem("loggedNoteAppUser");
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
@@ -77,22 +64,30 @@ function App() {
     }
   }, [user]);
 
-  const handleLoginSuccess = async (response) => {
+  const handleLoginSuccess = async (googleResponse, manualUserResponse) => {
     try {
-      const res = await axios.post("/api/auth/google", {
-        credential: response.credential,
-      });
-      const userData = res.data;
+      let userData;
+      if (googleResponse) {
+        const res = await axios.post("/api/auth/google", {
+          credential: googleResponse.credential,
+        });
+        userData = res.data;
+      } else {
+        userData = manualUserResponse;
+      }
 
       window.localStorage.setItem(
         "loggedNoteAppUser",
         JSON.stringify(userData)
       );
       noteService.setToken(userData.token);
+      userService.setToken(userData.token);
       setUser(userData);
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Failed to sign in with Google. Please try again.");
+      alert(
+        error.response?.data?.message || "Failed to sign in. Please try again."
+      );
     }
   };
 
@@ -102,6 +97,13 @@ function App() {
     setNotes([]);
     setSelectedNote(null);
   };
+
+  // Session Timeout Hook
+  const { isWarning, resetTimers } = useSessionTimeout({
+    timeoutMinutes: 30,
+    warningMinutes: 1,
+    onLogout: handleLogout,
+  });
 
   // Create a new note
   const handleAddNote = async () => {
@@ -243,16 +245,16 @@ function App() {
   }
 
   if (!user) {
-    return (
+    return showAuth ? (
       <LoginPage
         onLoginSuccess={handleLoginSuccess}
         onLoginError={(error) => {
-          console.error("Google Sign-In Error Details:", error);
-          alert(
-            "Google Sign-In was unsuccessful. Check the console for details."
-          );
+          console.error("Auth Error Details:", error);
         }}
+        onBack={() => setShowAuth(false)}
       />
+    ) : (
+      <LandingPage onGetStarted={() => setShowAuth(true)} />
     );
   }
 
@@ -302,6 +304,37 @@ function App() {
         totalNotes={notes.length}
         onUpdateProfile={handleUpdateProfile}
       />
+
+      {/* Session Timeout Warning */}
+      <AnimatePresence>
+        {isWarning && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-bg-secondary w-full max-w-md rounded-2xl p-8 border border-white/10 shadow-2xl text-center"
+            >
+              <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <h2 className="text-2xl font-bold text-text-primary mb-3">
+                Session Expiring
+              </h2>
+              <p className="text-text-secondary mb-8">
+                Your session is about to expire due to inactivity. You will be
+                logged out automatically in about a minute.
+              </p>
+              <button
+                onClick={resetTimers}
+                className="w-full py-4 bg-accent hover:bg-accent-hover text-white rounded-xl font-semibold transition-all shadow-lg shadow-accent/20 active:scale-[0.98]"
+              >
+                Stay Logged In
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

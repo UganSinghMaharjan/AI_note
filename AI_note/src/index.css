@@ -20,7 +20,7 @@
 
 @layer base {
   body {
-    @apply bg-bg-base text-text-main font-sans min-h-screen overflow-hidden;
+    @apply bg-bg-base text-text-main font-sans min-h-screen;
     background-image: radial-gradient(
         circle at 0% 0%,
         hsla(250, 50%, 25%, 0.4) 0%,

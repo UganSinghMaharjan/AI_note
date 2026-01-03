@@ -1,8 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import userService from "../services/user";
+import { HiMail, HiLockClosed, HiUser, HiArrowLeft } from "react-icons/hi";
 
-const LoginPage = ({ onLoginSuccess, onLoginError }) => {
+const LoginPage = ({ onLoginSuccess, onLoginError, onBack }) => {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    name: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      let response;
+      if (isSignUp) {
+        response = await userService.register(formData);
+      } else {
+        response = await userService.login({
+          email: formData.email,
+          password: formData.password,
+        });
+      }
+      onLoginSuccess(null, response); // Pass null for response.credential if it's manual login
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Authentication failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center p-4 bg-bg-base overflow-hidden">
       {/* Animated Background Orbs */}
@@ -28,28 +73,129 @@ const LoginPage = ({ onLoginSuccess, onLoginError }) => {
       />
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-md p-10 glass-panel rounded-3xl border border-white/10 flex flex-col items-center text-center shadow-2xl"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative z-10 w-full max-w-lg glass-panel rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
       >
-        <div className="mb-8 p-5 bg-accent/10 rounded-2xl border border-accent/20">
-          <span className="text-6xl">📝</span>
-        </div>
+        <div className="p-8 md:p-12">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="mb-8 flex items-center gap-2 text-text-muted hover:text-white transition-colors group"
+            >
+              <HiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+              Back
+            </button>
+          )}
 
-        <h1 className="text-4xl font-bold mb-3 tracking-tight text-white bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-          AI Notes
-        </h1>
-        <p className="text-text-muted/70 mb-10 text-lg font-medium leading-relaxed">
-          Your thoughts, organized beautifully <br /> and secured with AI.
-        </p>
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+              {isSignUp ? "Create an Account" : "Welcome Back"}
+            </h1>
+            <p className="text-text-muted mt-2">
+              {isSignUp
+                ? "Join AI Notes today"
+                : "Log in to continue your journey"}
+            </p>
+          </div>
 
-        <div className="w-full flex flex-col items-center gap-6">
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-xl text-center"
+            >
+              {error}
+            </motion.div>
+          )}
 
-          <div className="scale-110 hover:scale-115 transition-transform duration-300">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <AnimatePresence mode="wait">
+              {isSignUp && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <label className="block text-sm font-medium text-text-muted mb-1.5 ml-1">
+                    Full Name
+                  </label>
+                  <div className="relative group">
+                    <HiUser className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-accent transition-colors" />
+                    <input
+                      type="text"
+                      name="name"
+                      required={isSignUp}
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="John Doe"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-white/[0.08] transition-all"
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div>
+              <label className="block text-sm font-medium text-text-muted mb-1.5 ml-1">
+                Email Address
+              </label>
+              <div className="relative group">
+                <HiMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-accent transition-colors" />
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="name@example.com"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-white/[0.08] transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-muted mb-1.5 ml-1">
+                Password
+              </label>
+              <div className="relative group">
+                <HiLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted group-focus-within:text-accent transition-colors" />
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-white/[0.08] transition-all"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-accent hover:bg-accent-hover disabled:bg-accent/50 text-white rounded-xl font-bold transition-all shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : null}
+              {isSignUp ? "Sign Up" : "Login"}
+            </button>
+          </form>
+
+          <div className="relative my-8 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <span className="relative px-4 bg-bg-base text-text-muted text-sm uppercase tracking-widest font-semibold">
+              Or continue with
+            </span>
+          </div>
+
+          <div className="flex justify-center scale-110">
             <GoogleLogin
-              onSuccess={onLoginSuccess}
+              onSuccess={(res) => onLoginSuccess(res)}
               onError={(error) => {
                 console.error("Google Login Detailed Error:", error);
                 onLoginError(error);
@@ -60,9 +206,26 @@ const LoginPage = ({ onLoginSuccess, onLoginError }) => {
             />
           </div>
 
-          <p className="text-[0.7rem] text-text-muted/40 uppercase tracking-widest mt-4 font-semibold">
-            SECURE ACCESS BY GOOGLE
-          </p>
+          <div className="mt-10 text-center">
+            <button
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-text-muted hover:text-white transition-colors"
+            >
+              {isSignUp ? (
+                <>
+                  Already have an account?{" "}
+                  <span className="text-accent font-semibold ml-1">Login</span>
+                </>
+              ) : (
+                <>
+                  Don't have an account?{" "}
+                  <span className="text-accent font-semibold ml-1">
+                    Create Account
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>
