@@ -106,11 +106,12 @@ function App() {
   });
 
   // Create a new note
-  const handleAddNote = async () => {
+  const handleAddNote = async (folderName = "General") => {
     try {
       const newNote = await noteService.create({
         title: "Untitled Note",
         content: "",
+        folder: folderName,
         tags: [],
       });
       setNotes((prev) => [newNote, ...prev]);
@@ -161,6 +162,36 @@ function App() {
       setNoteToDelete(null);
     } catch (error) {
       console.error("Error deleting note:", error);
+    }
+  };
+
+  // Folder Management
+  const handleAddFolder = async (folderName) => {
+    try {
+      const { folders } = await userService.addFolder(folderName);
+      const updatedUser = { ...user, user: { ...user.user, folders } };
+      setUser(updatedUser);
+      window.localStorage.setItem(
+        "loggedNoteAppUser",
+        JSON.stringify(updatedUser)
+      );
+    } catch (error) {
+      console.error("Error adding folder:", error);
+      alert(error.response?.data?.message || "Failed to add folder");
+    }
+  };
+
+  const handleDeleteFolder = async (folderName) => {
+    try {
+      const { folders } = await userService.deleteFolder(folderName);
+      const updatedUser = { ...user, user: { ...user.user, folders } };
+      setUser(updatedUser);
+      window.localStorage.setItem(
+        "loggedNoteAppUser",
+        JSON.stringify(updatedUser)
+      );
+    } catch (error) {
+      console.error("Error deleting folder:", error);
     }
   };
 
@@ -236,6 +267,25 @@ function App() {
     }
   };
 
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = window.localStorage.getItem("noteAppDarkMode");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem("noteAppDarkMode", JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  useEffect(() => {
+    if (!darkMode) {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = () => setDarkMode(!darkMode);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg-base">
@@ -252,9 +302,10 @@ function App() {
           console.error("Auth Error Details:", error);
         }}
         onBack={() => setShowAuth(false)}
+        darkMode={darkMode}
       />
     ) : (
-      <LandingPage onGetStarted={() => setShowAuth(true)} />
+      <LandingPage onGetStarted={() => setShowAuth(true)} darkMode={darkMode} />
     );
   }
 
@@ -272,6 +323,12 @@ function App() {
         user={user.user}
         selectedNoteId={selectedNote?._id}
         onReorder={setNotes}
+        folders={user.user.folders || ["General"]}
+        onAddFolder={handleAddFolder}
+        onDeleteFolder={handleDeleteFolder}
+        onUpdateNote={handleUpdateNote}
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
       />
 
       <Editor
@@ -280,6 +337,7 @@ function App() {
         saveStatus={saveStatus}
         onAddAttachment={handleAddAttachment}
         onRemoveAttachment={handleRemoveAttachment}
+        darkMode={darkMode}
       />
 
       <ConfirmationModal

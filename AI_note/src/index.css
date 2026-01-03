@@ -1,18 +1,49 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+:root {
+  /* Crystal Clear Dark Mode */
+  --bg-base: #0a0a0f;
+  --bg-surface: #12121e;
+  --bg-glass: rgba(15, 15, 25, 0.7);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent: #818cf8;
+  --accent-glow: rgba(129, 140, 248, 0.2);
+  --success: #10b981;
+  --bg-gradient-1: rgba(129, 140, 248, 0.08);
+  --bg-gradient-2: rgba(56, 189, 248, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+.light {
+  /* Crystal Clear Light Mode */
+  --bg-base: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.45);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --accent: #4f46e5;
+  --accent-glow: rgba(79, 70, 229, 0.15);
+  --success: #059669;
+  --bg-gradient-1: rgba(79, 70, 229, 0.04);
+  --bg-gradient-2: rgba(14, 165, 233, 0.04);
+  --glass-border: rgba(15, 23, 42, 0.06);
+}
+
 @theme {
-  --color-bg-base: hsl(250, 24%, 9%);
-  --color-bg-surface: hsl(250, 20%, 14%);
-  --color-bg-glass: hsla(250, 20%, 18%, 0.65);
+  --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-glass: var(--bg-glass);
 
-  --color-text-main: hsl(0, 0%, 98%);
-  --color-text-muted: hsl(250, 15%, 75%);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
 
-  --color-accent: hsl(250, 85%, 70%);
-  --color-accent-glow: hsla(250, 85%, 70%, 0.3);
+  --color-accent: var(--accent);
+  --color-accent-hover: color-mix(in srgb, var(--accent), transparent 15%);
+  --color-accent-glow: var(--accent-glow);
 
-  --color-success: hsl(150, 60%, 50%);
+  --color-success: var(--success);
 
   --font-sans: "Outfit", "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
@@ -20,24 +51,33 @@
 
 @layer base {
   body {
-    @apply bg-bg-base text-text-main font-sans min-h-screen;
+    @apply bg-bg-base text-text-main font-sans min-h-screen transition-colors duration-500;
     background-image: radial-gradient(
         circle at 0% 0%,
-        hsla(250, 50%, 25%, 0.4) 0%,
+        var(--bg-gradient-1) 0%,
         transparent 40%
       ),
       radial-gradient(
         circle at 100% 100%,
-        hsla(190, 50%, 25%, 0.4) 0%,
+        var(--bg-gradient-2) 0%,
         transparent 40%
       );
   }
 }
 
 @utility glass-panel {
-  @apply bg-bg-glass backdrop-blur-xl border-r border-white/5 shadow-2xl;
+  @apply bg-bg-glass backdrop-blur-2xl shadow-2xl;
+  border: 1px solid var(--glass-border);
 }
 
 @utility glass-button {
-  @apply bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all duration-200 border border-white/10 shadow-sm backdrop-blur-sm cursor-pointer;
+  @apply transition-all duration-300 backdrop-blur-md cursor-pointer flex items-center justify-center;
+  background-color: color-mix(in srgb, var(--bg-glass), transparent 50%);
+  border: 1px solid var(--glass-border);
+
+  &:hover {
+    @apply shadow-lg;
+    background-color: color-mix(in srgb, var(--bg-glass), transparent 20%);
+    border-color: var(--accent-glow);
+  }
 }

@@ -7,7 +7,7 @@ import {
   HiArrowRight,
 } from "react-icons/hi";
 
-const LandingPage = ({ onGetStarted }) => {
+const LandingPage = ({ onGetStarted, darkMode }) => {
   const features = [
     {
       icon: <HiLightningBolt className="w-6 h-6 text-yellow-400" />,
@@ -42,7 +42,7 @@ const LandingPage = ({ onGetStarted }) => {
             <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-semibold tracking-wide uppercase">
               Next-Gen Note Taking
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight bg-gradient-to-r from-white via-white/90 to-white/60 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight bg-gradient-to-r from-text-main via-text-main/90 to-text-main/60 bg-clip-text text-transparent">
               Organize your mind <br className="hidden md:block" /> with{" "}
               <span className="text-accent">AI Notes</span>
             </h1>
@@ -95,7 +95,7 @@ const LandingPage = ({ onGetStarted }) => {
               viewport={{ once: true }}
               className="space-y-6"
             >
-              <h2 className="text-3xl md:text-4xl font-bold italic text-white">
+              <h2 className="text-3xl md:text-4xl font-bold italic text-text-main">
                 "Less friction, more flow."
               </h2>
               <p className="text-lg text-text-muted leading-relaxed">
@@ -108,16 +108,16 @@ const LandingPage = ({ onGetStarted }) => {
                 <div className="flex items-start gap-3">
                   <div className="mt-1 w-2 h-2 rounded-full bg-accent" />
                   <p className="text-text-muted">
-                    <span className="text-white font-medium">
-                      Dark Mode First:
+                    <span className="text-text-main font-medium">
+                      Adaptive Theme:
                     </span>{" "}
-                    Gentle on the eyes, perfect for focus.
+                    Switch between Dark and Light mode for your comfort.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="mt-1 w-2 h-2 rounded-full bg-accent" />
                   <p className="text-text-muted">
-                    <span className="text-white font-medium">
+                    <span className="text-text-main font-medium">
                       Glassmorphism UI:
                     </span>{" "}
                     Modern, sleek, and translucent interfaces.
@@ -126,7 +126,7 @@ const LandingPage = ({ onGetStarted }) => {
                 <div className="flex items-start gap-3">
                   <div className="mt-1 w-2 h-2 rounded-full bg-accent" />
                   <p className="text-text-muted">
-                    <span className="text-white font-medium">
+                    <span className="text-text-main font-medium">
                       Fluid Animations:
                     </span>{" "}
                     Interactions that feel alive and responsive.
@@ -138,11 +138,12 @@ const LandingPage = ({ onGetStarted }) => {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 shadow-2xl"
+              className="relative p-8 rounded-3xl bg-gradient-to-br from-text-main/5 to-text-main/[0.02] border border-white/10 shadow-2xl"
             >
               <div className="aspect-video bg-bg-base/50 rounded-xl border border-white/5 overflow-hidden flex items-center justify-center">
-                <span className="text-text-muted italic">
-                  Visualizing Premium Design...
+                <span className="text-text-muted italic text-center">
+                  Visualizing Premium <br /> {darkMode ? "Dark" : "Light"}{" "}
+                  Design...
                 </span>
               </div>
             </motion.div>

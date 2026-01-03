@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   password: { type: String },
   picture: { type: String },
+  folders: { type: [String], default: ["General"] },
   createdAt: { type: Date, default: Date.now },
 });
 
