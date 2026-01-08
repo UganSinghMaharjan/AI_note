@@ -9,6 +9,7 @@ import {
   FaSignOutAlt,
   FaInfoCircle,
   FaTimes,
+  FaCopy,
 } from "react-icons/fa";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 
@@ -30,6 +31,7 @@ const Sidebar = ({
   onUpdateNote,
   darkMode,
   onToggleDarkMode,
+  onClose,
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -160,9 +162,18 @@ const Sidebar = ({
     <aside className="w-[320px] h-full flex flex-col glass-panel relative z-10 transition-all duration-300">
       {/* ... header and notes ... */}
       <div className="p-6 pb-4">
-        <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-white via-white to-white/50 bg-clip-text text-transparent tracking-tight">
-          AI Notes
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-white to-white/50 bg-clip-text text-transparent tracking-tight">
+            AI Notes
+          </h1>
+          <button
+            onClick={onClose}
+            className="p-2 text-text-muted hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+            title="Collapse Sidebar"
+          >
+            <FaTimes size={16} />
+          </button>
+        </div>
 
         <div className="flex flex-col gap-3">
           <button
