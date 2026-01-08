@@ -49,7 +49,7 @@ const ProfileModal = ({
   const getProfilePicture = (picture) => {
     if (!picture) return "https://ui-avatars.com/api/?name=" + user.name;
     if (picture.startsWith("http")) return picture;
-    return `http://localhost:5000${picture}`;
+    return `http://localhost:5000${picture}?t=${new Date().getTime()}`;
   };
 
   return (

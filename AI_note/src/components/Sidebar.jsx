@@ -142,7 +142,18 @@ const Sidebar = ({
   const getProfilePicture = (picture) => {
     if (!picture) return "https://ui-avatars.com/api/?name=" + user.name;
     if (picture.startsWith("http")) return picture;
-    return `http://localhost:5000${picture}`;
+    return `http://localhost:5000${picture}?t=${new Date().getTime()}`;
+  };
+
+  const getFilteredNotes = (folder) => {
+    const notesInFolder = groupedNotes[folder] || [];
+    if (!searchQuery) return notesInFolder;
+
+    return notesInFolder.filter(
+      (n) =>
+        (n.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (n.content || "").toLowerCase().includes(searchQuery.toLowerCase())
+    );
   };
 
   return (
@@ -306,45 +317,42 @@ const Sidebar = ({
                     <Reorder.Group
                       axis="y"
                       layout
-                      values={groupedNotes[folder] || []}
+                      values={getFilteredNotes(folder)}
                       onReorder={(newOrder) =>
                         handeNoteReorder(folder, newOrder)
                       }
                       className="space-y-2 py-1 px-1.5"
                     >
-                      {(groupedNotes[folder] || []).length === 0 ? (
+                      {getFilteredNotes(folder).length === 0 ? (
                         <div className="mx-2 mb-2 py-4 border border-dashed border-white/5 rounded-xl text-[10px] text-text-muted/15 text-center uppercase tracking-[0.2em] font-medium">
-                          Empty Group
+                          {searchQuery ? "No matches in group" : "Empty Group"}
                         </div>
                       ) : (
-                        groupedNotes[folder].map((note) => (
+                        getFilteredNotes(folder).map((note) => (
                           <Reorder.Item
                             value={note}
                             key={note._id}
                             layout
                             layoutId={note._id}
-                            dragTransition={{
-                              power: 0.05,
-                              timeConstant: 120,
-                            }}
+                            dragListener={true}
+                            dragControls={undefined}
                             onDrag={(e, info) => handleDrag(e, info)}
                             onDragEnd={(e, info) => handleDragEnd(note, info)}
                             transition={{
                               layout: {
                                 type: "spring",
-                                stiffness: 600,
-                                damping: 50,
-                                mass: 0.5,
+                                stiffness: 500,
+                                damping: 30,
+                                mass: 1,
                               },
-                              opacity: { duration: 0.15 },
+                              opacity: { duration: 0.2 },
                             }}
                             whileDrag={{
-                              scale: 1.04,
-                              rotate: 1.5,
-                              backgroundColor: "rgba(255, 255, 255, 0.2)",
-                              borderColor: "rgba(255, 255, 255, 0.3)",
-                              boxShadow: "0 30px 60px -12px rgba(0, 0, 0, 0.6)",
-                              zIndex: 100,
+                              scale: 1.02,
+                              backgroundColor: "rgba(255, 255, 255, 0.1)",
+                              borderColor: "var(--accent)",
+                              boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.5)",
+                              zIndex: 50,
                               cursor: "grabbing",
                             }}
                             whileHover={{
