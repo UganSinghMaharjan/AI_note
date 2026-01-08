@@ -20,6 +20,9 @@ import {
   FaHeading,
   FaImage,
   FaPalette,
+  FaCopy,
+  FaCheck,
+  FaPaste,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -35,6 +38,8 @@ const Editor = ({
   onAddAttachment,
   onRemoveAttachment,
   darkMode,
+  isSidebarOpen,
+  onToggleSidebar,
 }) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -43,6 +48,7 @@ const Editor = ({
   const fileInputRef = useRef(null);
   const textAreaRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (note) {
@@ -74,6 +80,43 @@ const Editor = ({
   const handleFolderChange = (e) => setFolder(e.target.value);
 
   const handleFileClick = () => fileInputRef.current?.click();
+
+  const handleCopyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) return;
+
+      const textarea = textAreaRef.current;
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const currentText = textarea.value;
+        const newText =
+          currentText.substring(0, start) + text + currentText.substring(end);
+
+        setContent(newText);
+
+        // Update cursor position
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(start + text.length, start + text.length);
+        }, 0);
+      }
+    } catch (err) {
+      console.error("Failed to read clipboard:", err);
+      alert("Could not paste from clipboard. Please allow access.");
+    }
+  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -139,10 +182,42 @@ const Editor = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
 
+  const formatLastEdited = (dateString) => {
+    if (!dateString) return "Just now";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+
+    // If less than 24 hours, show relative time
+    if (diff < 24 * 60 * 60 * 1000 && now.getDate() === date.getDate()) {
+      return `Last edited at ${date.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      })}`;
+    }
+
+    // Otherwise show date
+    return `Last edited ${date.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    })}`;
+  };
+
   if (!note) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-bg-base relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none" />
+
+        {!isSidebarOpen && (
+          <button
+            onClick={onToggleSidebar}
+            className="absolute top-4 left-4 p-3 bg-bg-surface border border-white/10 rounded-xl text-text-muted hover:text-white shadow-lg transition-colors z-50"
+            title="Open Sidebar"
+          >
+            <FaFolder size={18} />
+          </button>
+        )}
+
         <div className="text-center space-y-4 z-10 p-8 glass-panel rounded-3xl border border-white/5 shadow-2xl">
           <div className="w-20 h-20 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-accent/20">
             <HiOutlineDocumentText className="text-4xl text-accent" />
@@ -175,6 +250,15 @@ const Editor = ({
         <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
           {/* Meta Inputs */}
           <div className="flex items-center gap-4">
+            {!isSidebarOpen && (
+              <button
+                onClick={onToggleSidebar}
+                className="p-1.5 mr-2 bg-white/5 border border-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+                title="Open Sidebar"
+              >
+                <FaFolder size={14} />
+              </button>
+            )}
             <div className="flex items-center gap-2 px-3 py-1.5 bg-bg-base rounded-md border border-white/5 hover:border-accent/30 transition-colors group">
               <FaFolder className="text-text-muted/50 group-hover:text-accent transition-colors text-xs" />
               <input
@@ -198,13 +282,31 @@ const Editor = ({
                   <FaCheckSquare className="text-[10px]" /> Saved
                 </span>
               ) : (
-                <span>Last edited just now</span>
+                <span>{formatLastEdited(note.updatedAt)}</span>
               )}
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={handlePasteFromClipboard}
+              className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+              title="Paste from Clipboard"
+            >
+              <FaPaste size={14} />
+            </button>
+            <button
+              onClick={handleCopyToClipboard}
+              className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+              title="Copy Text to Clipboard"
+            >
+              {copied ? (
+                <FaCheck size={14} className="text-green-400" />
+              ) : (
+                <FaCopy size={14} />
+              )}
+            </button>
             <button
               onClick={handleFileClick}
               disabled={isUploading}
@@ -401,6 +503,13 @@ const Editor = ({
             ))}
           </div>
         )}
+
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+        />
       </motion.div>
     </main>
   );

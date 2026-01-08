@@ -286,6 +286,9 @@ function App() {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
+  // Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg-base">
@@ -311,25 +314,38 @@ function App() {
 
   return (
     <div className="flex w-screen h-screen overflow-hidden">
-      <Sidebar
-        notes={notes}
-        onSelectNote={setSelectedNote}
-        onAddNote={handleAddNote}
-        onDeleteNote={handleDeleteClick}
-        onLogout={handleLogout}
-        onOpenDataManagement={() => setIsDataManagementOpen(true)}
-        onOpenAbout={() => setIsAboutOpen(true)}
-        onOpenProfile={() => setIsProfileOpen(true)}
-        user={user.user}
-        selectedNoteId={selectedNote?._id}
-        onReorder={setNotes}
-        folders={user.user.folders || ["General"]}
-        onAddFolder={handleAddFolder}
-        onDeleteFolder={handleDeleteFolder}
-        onUpdateNote={handleUpdateNote}
-        darkMode={darkMode}
-        onToggleDarkMode={toggleDarkMode}
-      />
+      <AnimatePresence mode="wait">
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 320, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="flex-shrink-0 h-full overflow-hidden"
+          >
+            <Sidebar
+              notes={notes}
+              onSelectNote={setSelectedNote}
+              onAddNote={handleAddNote}
+              onDeleteNote={handleDeleteClick}
+              onLogout={handleLogout}
+              onOpenDataManagement={() => setIsDataManagementOpen(true)}
+              onOpenAbout={() => setIsAboutOpen(true)}
+              onOpenProfile={() => setIsProfileOpen(true)}
+              user={user.user}
+              selectedNoteId={selectedNote?._id}
+              onReorder={setNotes}
+              folders={user.user.folders || ["General"]}
+              onAddFolder={handleAddFolder}
+              onDeleteFolder={handleDeleteFolder}
+              onUpdateNote={handleUpdateNote}
+              darkMode={darkMode}
+              onToggleDarkMode={toggleDarkMode}
+              onClose={() => setIsSidebarOpen(false)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Editor
         note={selectedNote}
@@ -338,6 +354,8 @@ function App() {
         onAddAttachment={handleAddAttachment}
         onRemoveAttachment={handleRemoveAttachment}
         darkMode={darkMode}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
       />
 
       <ConfirmationModal
