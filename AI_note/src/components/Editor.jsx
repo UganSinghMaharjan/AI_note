@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import {
   FaPaperclip,
   FaFilePdf,
@@ -8,13 +9,23 @@ import {
   FaFile,
   FaDownload,
   FaTimes,
-  FaPlus,
+  FaFolder,
+  FaBold,
+  FaItalic,
+  FaCode,
+  FaLink,
+  FaListUl,
+  FaCheckSquare,
+  FaQuoteRight,
+  FaHeading,
+  FaImage,
+  FaPalette,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  HiOutlineSparkles,
   HiOutlinePencilAlt,
-  HiOutlineLightningBolt,
+  HiOutlineSave,
+  HiOutlineDocumentText,
 } from "react-icons/hi";
 
 const Editor = ({
@@ -28,7 +39,9 @@ const Editor = ({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [folder, setFolder] = useState("");
+  const [showColorPicker, setShowColorPicker] = useState(false);
   const fileInputRef = useRef(null);
+  const textAreaRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
@@ -76,6 +89,32 @@ const Editor = ({
     }
   };
 
+  const insertMarkdown = (prefix, suffix = "") => {
+    const textarea = textAreaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const before = text.substring(0, start);
+    const selection = text.substring(start, end);
+    const after = text.substring(end);
+
+    const newText = before + prefix + selection + suffix + after;
+    setContent(newText);
+
+    // Restore focus and selection
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+    }, 0);
+  };
+
+  const insertColor = (color) => {
+    insertMarkdown(`<span style="color: ${color}">`, "</span>");
+    setShowColorPicker(false);
+  };
+
   const getFileIcon = (fileName) => {
     const ext = fileName.split(".").pop().toLowerCase();
     switch (ext) {
@@ -101,248 +140,268 @@ const Editor = ({
   };
 
   if (!note) {
-    const tips = [
-      "Use Markdown for better organization.",
-      "Stay focused, stay productive.",
-      "Your ideas deserve to be captured.",
-      "A clear mind leads to clear notes.",
-      "Organize your thoughts, change the world.",
-    ];
-    const randomTip = tips[Math.floor(Date.now() / 86400000) % tips.length];
-
     return (
-      <div className="flex-1 relative flex flex-col items-center justify-center overflow-hidden bg-bg-base">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <motion.div
-            animate={{
-              y: [0, -20, 0],
-              opacity: darkMode ? [0.1, 0.2, 0.1] : [0.05, 0.12, 0.05],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent/20 rounded-full blur-[100px]"
-          />
-          <motion.div
-            animate={{
-              y: [0, 20, 0],
-              opacity: darkMode ? [0.05, 0.15, 0.05] : [0.03, 0.08, 0.03],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 15,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2,
-            }}
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-[120px]"
-          />
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 flex flex-col items-center text-center px-6"
-        >
-          <div className="relative mb-12">
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className={`text-9xl filter ${
-                darkMode
-                  ? "drop-shadow-[0_0_30px_rgba(255,255,255,0.05)]"
-                  : "drop-shadow-[0_0_30px_rgba(0,0,0,0.05)]"
-              }`}
-            >
-              📝
-            </motion.div>
-
-            {/* Floating Icons */}
-            <motion.div
-              animate={{ y: [0, -10, 0], x: [0, 5, 0] }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="absolute -top-4 -right-4 w-10 h-10 bg-accent/20 backdrop-blur-md rounded-xl border border-white/10 flex items-center justify-center text-accent shadow-lg"
-            >
-              <HiOutlineSparkles size={20} />
-            </motion.div>
-            <motion.div
-              animate={{ y: [0, 10, 0], x: [0, -5, 0] }}
-              transition={{ duration: 6, repeat: Infinity, delay: 1 }}
-              className="absolute -bottom-2 -left-6 w-12 h-12 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center text-text-muted/40 shadow-xl"
-            >
-              <HiOutlinePencilAlt size={24} />
-            </motion.div>
+      <div className="flex-1 flex flex-col items-center justify-center bg-bg-base relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none" />
+        <div className="text-center space-y-4 z-10 p-8 glass-panel rounded-3xl border border-white/5 shadow-2xl">
+          <div className="w-20 h-20 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-accent/20">
+            <HiOutlineDocumentText className="text-4xl text-accent" />
           </div>
-
-          <h2 className="text-4xl font-bold mb-4 tracking-tight bg-gradient-to-r from-text-main via-text-main to-text-main/40 bg-clip-text text-transparent italic">
-            Your Creative Space
+          <h2 className="text-3xl font-bold text-text-main">
+            No Note Selected
           </h2>
-          <p className="text-xl text-text-muted/60 max-w-sm mb-12 font-medium leading-relaxed">
-            Select a note to start editing or create a new one to capture your
-            next big idea.
+          <p className="text-text-muted max-w-sm">
+            Select a note from the sidebar or verify your creativity by creating
+            a new one.
           </p>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="py-3 px-6 bg-white/[0.03] border border-white/5 rounded-2xl backdrop-blur-sm flex items-center gap-3 group hover:border-accent/30 transition-colors"
-          >
-            <HiOutlineLightningBolt className="text-accent/50 group-hover:text-accent transition-colors" />
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-text-muted/40 group-hover:text-text-muted/60 transition-colors">
-              Tip: {randomTip}
-            </span>
-          </motion.div>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
-    <main className="flex-1 flex flex-col h-full relative overflow-hidden">
-      {/* Save Status Indicator */}
-      <div className="absolute top-8 right-12 z-20 pointer-events-none">
-        <div
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-500 border
-          ${
-            saveStatus === "saving"
-              ? "opacity-100 translate-y-0"
-              : saveStatus === "saved"
-              ? "opacity-100 translate-y-0 bg-white/5 border-white/10"
-              : "opacity-0 translate-y-2"
-          }
-          glass-panel bg-white/5 border-white/10`}
-        >
-          {saveStatus === "saving" ? (
-            <>
-              <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse shadow-[0_0_8px_theme(colors.accent)]" />
-              <span className="text-[0.65rem] font-bold text-text-muted/80 uppercase tracking-widest">
-                Saving...
-              </span>
-            </>
-          ) : saveStatus === "saved" ? (
-            <>
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_theme(colors.success)]" />
-              <span className="text-[0.65rem] font-bold text-green-500 uppercase tracking-widest">
-                Saved
-              </span>
-            </>
-          ) : null}
-        </div>
-      </div>
+    <main className="flex-1 flex flex-col h-full bg-bg-base relative overflow-hidden p-4 md:p-8">
+      {/* Background Noise/Pattern */}
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none" />
 
-      {/* Editor Header */}
-      <div className="px-12 pb-4 pt-10 flex flex-col gap-4 group">
-        <div className="flex justify-between items-center gap-4">
+      {/* The "Sheet" / Card Container */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex-1 flex flex-col bg-bg-surface border border-white/10 rounded-2xl shadow-2xl relative z-10 overflow-hidden max-w-[95%] mx-auto w-full"
+      >
+        {/* Header Bar */}
+        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+          {/* Meta Inputs */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-bg-base rounded-md border border-white/5 hover:border-accent/30 transition-colors group">
+              <FaFolder className="text-text-muted/50 group-hover:text-accent transition-colors text-xs" />
+              <input
+                type="text"
+                value={folder}
+                onChange={handleFolderChange}
+                className="bg-transparent border-none outline-none text-xs font-semibold text-text-main w-[100px] placeholder:text-text-muted/30"
+                placeholder="Folder"
+              />
+            </div>
+
+            <div className="h-4 w-[1px] bg-white/10"></div>
+
+            <div className="flex items-center gap-2 text-xs text-text-muted font-mono">
+              {saveStatus === "saving" ? (
+                <span className="flex items-center gap-1 text-accent animate-pulse">
+                  <HiOutlineSave /> Saving...
+                </span>
+              ) : saveStatus === "saved" ? (
+                <span className="flex items-center gap-1 text-green-500">
+                  <FaCheckSquare className="text-[10px]" /> Saved
+                </span>
+              ) : (
+                <span>Last edited just now</span>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleFileClick}
+              disabled={isUploading}
+              className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+              title="Attach File"
+            >
+              {isUploading ? (
+                <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <FaPaperclip size={14} />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Title Area */}
+        <div className="px-6 pt-8 pb-4">
           <input
             type="text"
             value={title}
             onChange={handleTitleChange}
-            placeholder="Note Title"
-            className="text-5xl font-bold flex-1 bg-transparent border-none outline-none text-text-main placeholder:text-text-muted/20 tracking-tight"
+            placeholder="Untitled Document"
+            className="w-full bg-transparent border-none outline-none text-4xl font-bold text-text-main placeholder:text-text-muted/20"
           />
-          <button
-            onClick={handleFileClick}
-            disabled={isUploading}
-            className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-text-muted hover:text-white transition-all duration-300 flex items-center gap-2 shadow-sm"
-          >
-            {isUploading ? (
-              <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <FaPaperclip className="text-accent/70" />
-            )}
-            <span className="text-sm font-semibold">Attach</span>
-          </button>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2 transition-all duration-300 hover:bg-white/10">
-            <span className="text-[10px] font-bold text-text-muted/40 uppercase tracking-widest">
-              Folder
-            </span>
-            <input
-              type="text"
-              value={folder}
-              onChange={handleFolderChange}
-              placeholder="General"
-              className="bg-transparent border-none outline-none text-xs font-semibold text-accent/80 min-w-[100px] w-auto placeholder:text-text-muted/20"
-            />
+        {/* Formatting Toolbar */}
+        <div className="px-6 py-2 flex items-center gap-1 border-y border-white/5 bg-bg-base/50 relative z-20">
+          {[
+            {
+              icon: FaBold,
+              action: () => insertMarkdown("**", "**"),
+              title: "Bold",
+            },
+            {
+              icon: FaItalic,
+              action: () => insertMarkdown("*", "*"),
+              title: "Italic",
+            },
+            {
+              icon: FaHeading,
+              action: () => insertMarkdown("# ", ""),
+              title: "Heading",
+            },
+            { divider: true },
+            {
+              icon: FaCode,
+              action: () => insertMarkdown("`", "`"),
+              title: "Code",
+            },
+            {
+              icon: FaQuoteRight,
+              action: () => insertMarkdown("> ", ""),
+              title: "Quote",
+            },
+            {
+              icon: FaListUl,
+              action: () => insertMarkdown("- ", ""),
+              title: "List",
+            },
+            {
+              icon: FaCheckSquare,
+              action: () => insertMarkdown("- [ ] ", ""),
+              title: "Checkbox",
+            },
+            { divider: true },
+            {
+              icon: FaLink,
+              action: () => insertMarkdown("[", "](url)"),
+              title: "Link",
+            },
+            {
+              icon: FaImage,
+              action: () => insertMarkdown("![alt](", ")"),
+              title: "Image",
+            },
+          ].map((item, i) =>
+            item.divider ? (
+              <div key={i} className="w-[1px] h-4 bg-white/10 mx-2" />
+            ) : (
+              <button
+                key={i}
+                onClick={item.action}
+                className="p-1.5 hover:bg-white/10 rounded text-text-muted hover:text-white transition-colors"
+                title={item.title}
+              >
+                <item.icon size={12} />
+              </button>
+            )
+          )}
+          <div className="w-[1px] h-4 bg-white/10 mx-2" />
+          <div className="relative">
+            <button
+              onClick={() => setShowColorPicker(!showColorPicker)}
+              className={`p-1.5 hover:bg-white/10 rounded transition-colors ${
+                showColorPicker
+                  ? "bg-white/10 text-accent"
+                  : "text-text-muted hover:text-white"
+              }`}
+              title="Text Color"
+            >
+              <FaPalette size={12} />
+            </button>
+            <AnimatePresence>
+              {showColorPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-full left-0 mt-2 p-2 bg-bg-surface border border-white/10 rounded-xl shadow-xl flex gap-2 w-max z-50"
+                >
+                  {[
+                    "#ff5555",
+                    "#ffb86c",
+                    "#f1fa8c",
+                    "#50fa7b",
+                    "#8be9fd",
+                    "#bd93f9",
+                    "#ff79c6",
+                    "#f8f8f2",
+                  ].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => insertColor(color)}
+                      className="w-6 h-6 rounded-full border border-white/10 hover:scale-110 transition-transform"
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          className="hidden"
-        />
-      </div>
+        {/* Main Content Area */}
+        <div className="flex-1 flex min-h-0">
+          {/* Editor Input */}
+          <div className="flex-1 relative border-r border-white/5 bg-bg-base/20">
+            <textarea
+              ref={textAreaRef}
+              value={content}
+              onChange={handleContentChange}
+              placeholder="Type your markdown here..."
+              className="absolute inset-0 w-full h-full p-6 bg-transparent border-none outline-none resize-none font-mono text-sm leading-relaxed text-text-main/90 placeholder:text-text-muted/20 custom-scrollbar"
+              spellCheck="false"
+            />
+          </div>
 
-      {/* Editor Body */}
-      <div className="flex-1 flex px-12 pb-6 gap-12 overflow-hidden items-stretch">
-        <textarea
-          value={content}
-          onChange={handleContentChange}
-          placeholder="Start typing in Markdown..."
-          className="flex-1 bg-transparent border-none resize-none outline-none text-lg leading-relaxed text-text-main/90 font-mono h-full placeholder:text-text-muted/30 focus:placeholder:text-text-muted/50 transition-colors"
-        />
-        <div className="flex-1 overflow-y-auto pl-12 border-l border-white/5 markdown-preview scroll-smooth">
-          <article
-            className={`prose ${
-              darkMode ? "prose-invert" : ""
-            } prose-lg max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-p:text-text-muted/90 prose-a:text-accent prose-code:text-accent prose-pre:bg-bg-surface prose-pre:border prose-pre:border-white/5`}
-          >
-            <ReactMarkdown>{content}</ReactMarkdown>
-          </article>
+          {/* Preview Output */}
+          <div className="flex-1 relative bg-bg-surface">
+            <div className="absolute inset-0 w-full h-full p-6 overflow-y-auto custom-scrollbar">
+              <article
+                className={`prose ${
+                  darkMode ? "prose-invert" : ""
+                } prose-sm max-w-none
+                    prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl
+                    prose-p:text-text-muted/80
+                    prose-a:text-accent prose-code:text-accent prose-code:bg-white/5 prose-code:px-1 prose-code:rounded
+                    prose-pre:bg-bg-base prose-pre:border prose-pre:border-white/5`}
+              >
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                  {content}
+                </ReactMarkdown>
+              </article>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Attachments Section */}
-      {note.attachments && note.attachments.length > 0 && (
-        <div className="px-12 pb-8 pt-4 border-t border-white/5 bg-white/[0.02]">
-          <h3 className="text-xs font-bold text-text-muted/40 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-            <FaPaperclip className="text-[10px]" />
-            Attachments ({note.attachments.length})
-          </h3>
-          <div className="flex flex-wrap gap-4">
+        {/* Footer / Attachments */}
+        {note.attachments && note.attachments.length > 0 && (
+          <div className="px-6 py-3 border-t border-white/5 bg-bg-base/30 flex items-center gap-3 overflow-x-auto custom-scrollbar">
             {note.attachments.map((file) => (
               <div
                 key={file._id}
-                className="group flex items-center bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 p-3 pr-4 rounded-xl transition-all duration-300 gap-3 min-w-[200px]"
+                className="flex items-center gap-2 px-3 py-1.5 bg-bg-surface border border-white/10 rounded-md shadow-sm shrink-0 group"
               >
-                <div className="text-2xl opacity-80 group-hover:opacity-100 transition-opacity">
+                <span className="text-text-muted/70">
                   {getFileIcon(file.name)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-text-main truncate leading-tight">
-                    {file.name}
-                  </p>
-                  <p className="text-[0.65rem] text-text-muted/40 font-bold uppercase tracking-tighter">
-                    {formatSize(file.size)}
-                  </p>
-                </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                  <button
-                    onClick={() =>
-                      window.open(`http://localhost:5000${file.url}`, "_blank")
-                    }
-                    className="p-2 hover:bg-white/10 rounded-lg text-text-muted hover:text-accent transition-colors"
-                  >
-                    <FaDownload size={14} />
-                  </button>
-                  <button
-                    onClick={() => onRemoveAttachment(note._id, file._id)}
-                    className="p-2 hover:bg-red-500/20 rounded-lg text-text-muted hover:text-red-400 transition-colors"
-                  >
-                    <FaTimes size={14} />
-                  </button>
-                </div>
+                </span>
+                <span className="text-xs font-medium text-text-main truncate max-w-[100px]">
+                  {file.name}
+                </span>
+                <span className="text-[10px] text-text-muted/50 uppercase">
+                  {formatSize(file.size)}
+                </span>
+                <button
+                  onClick={() => onRemoveAttachment(note._id, file._id)}
+                  className="ml-2 hover:text-red-400 text-text-muted transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <FaTimes size={10} />
+                </button>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </motion.div>
     </main>
   );
 };
