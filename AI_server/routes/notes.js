@@ -3,13 +3,18 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import Note from "../models/Note.js";
+import { extractTextFromFile } from "../utils/fileParser.js";
 
 const router = express.Router();
 
 // Multer configuration for attachments
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/attachments/");
+    const dir = "uploads/attachments/";
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     cb(
@@ -38,24 +43,38 @@ router.get("/", async (req, res) => {
 
 // ATTACH file to note
 router.post("/:id/attachments", upload.single("file"), async (req, res) => {
+  console.log(`[Notes] Attachment request for note: ${req.params.id}`);
   try {
     const note = await Note.findOne({ _id: req.params.id, user: req.userId });
-    if (!note) return res.status(404).json({ message: "Note not found" });
+    if (!note) {
+      console.log(`[Notes] Note not found: ${req.params.id}`);
+      return res.status(404).json({ message: "Note not found" });
+    }
 
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    if (!req.file) {
+      console.log("[Notes] No file in request");
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    // Extract text
+    const extractedText = await extractTextFromFile(req.file);
 
     const attachment = {
       name: req.file.originalname,
       url: `/uploads/attachments/${req.file.filename}`,
       path: req.file.path,
       size: req.file.size,
+      mimeType: req.file.mimetype,
+      extractedText: extractedText,
     };
 
     note.attachments.push(attachment);
     await note.save();
+    console.log("[Notes] Attachment saved to DB successfully");
 
     res.status(201).json(note);
   } catch (error) {
+    console.error("[Notes] Attachment error:", error);
     res.status(500).json({ message: error.message });
   }
 });

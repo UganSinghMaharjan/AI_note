@@ -23,8 +23,10 @@ import {
   FaCopy,
   FaCheck,
   FaPaste,
+  FaRobot,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import AIChatPanel from "./AIChatPanel";
 import {
   HiOutlinePencilAlt,
   HiOutlineSave,
@@ -49,6 +51,7 @@ const Editor = ({
   const textAreaRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showAISidebar, setShowAISidebar] = useState(false);
 
   useEffect(() => {
     if (note) {
@@ -290,6 +293,13 @@ const Editor = ({
           {/* Actions */}
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowAISidebar(true)}
+              className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+              title="Ask AI"
+            >
+              <FaRobot size={14} />
+            </button>
+            <button
               onClick={handlePasteFromClipboard}
               className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
               title="Paste from Clipboard"
@@ -474,6 +484,21 @@ const Editor = ({
               </article>
             </div>
           </div>
+          {/* AIChatPanel */}
+          <AnimatePresence>
+            {showAISidebar && (
+              <AIChatPanel
+                isOpen={showAISidebar}
+                onClose={() => setShowAISidebar(false)}
+                noteContext={{
+                  title,
+                  content,
+                  folder,
+                  attachments: note.attachments || [],
+                }}
+              />
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Footer / Attachments */}
