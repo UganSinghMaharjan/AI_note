@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
 import ConfirmationModal from "./components/ConfirmationModal";
@@ -91,12 +91,12 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     window.localStorage.removeItem("loggedNoteAppUser");
     setUser(null);
     setNotes([]);
     setSelectedNote(null);
-  };
+  }, []);
 
   // Session Timeout Hook
   const { isWarning, resetTimers } = useSessionTimeout({
