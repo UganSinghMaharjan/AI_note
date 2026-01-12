@@ -26,6 +26,8 @@ const noteSchema = new mongoose.Schema({
       url: String,
       path: String,
       size: Number,
+      mimeType: String,
+      extractedText: String,
       createdAt: { type: Date, default: Date.now },
     },
   ],

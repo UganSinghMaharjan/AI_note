@@ -1,0 +1,176 @@
+
+> ai_server@1.0.0 dev
+> nodemon index.js
+
+[33m[nodemon] 3.1.11[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+Server running on port 5000
+MongoDB Connected
+[0mGET /api/notes [32m200[0m 26.299 ms - 7234[0m
+[0mDELETE /api/notes/696487db80f49c8160a0c0ad/attachments/6964a05bc434cde6a9b6cdb6 [32m200[0m 14.610 ms - 913[0m
+[Notes] Attachment request for note: 696487db80f49c8160a0c0ad
+[Notes] File received: Ugans_cv.pdf (106961 bytes), at path: uploads/attachments/696487db80f49c8160a0c0ad-1768203216034.pdf
+[Notes] Triggering text extraction for: Ugans_cv.pdf
+[Parser] Attempting to parse PDF: /home/lled/Desktop/new /AI_server/uploads/attachments/696487db80f49c8160a0c0ad-1768203216034.pdf
+[Parser] File read successful. Buffer size: 106961 bytes
+[Parser] PDF text extracted successfully. Total pages: 1, Text length: 3100 chars
+[Parser] Sample text: Ugan Singh Maharjan
+Patan Dhokha, Lalitpur | +977-9803389703 | uganmaharjan09@gmail.com
+Education
+Th...
+[Notes] Extraction success. Text length: 3100 chars
+[Notes] Attachment saved to DB successfully
+[0mPOST /api/notes/696487db80f49c8160a0c0ad/attachments [32m201[0m 253.762 ms - 4416[0m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+Server running on port 5000
+MongoDB Connected
+[Global] Incoming Request: GET /api/notes
+[0mGET /api/notes [33m401[0m 5.056 ms - 32[0m
+[Global] Incoming Request: POST /api/notes/696487db80f49c8160a0c0ad/attachments
+[Notes] Attachment request for note: 696487db80f49c8160a0c0ad
+[Notes] File received: Ugans_cv.pdf (106961 bytes), at path: uploads/attachments/696487db80f49c8160a0c0ad-1768203518736.pdf
+[Notes] Triggering text extraction for: Ugans_cv.pdf
+[Parser] Attempting to parse PDF: /home/lled/Desktop/new /AI_server/uploads/attachments/696487db80f49c8160a0c0ad-1768203518736.pdf
+[Parser] File read successful. Buffer size: 106961 bytes
+[Parser] PDF text extracted successfully. Total pages: 1, Text length: 3100 chars
+[Parser] Sample text: Ugan Singh Maharjan
+Patan Dhokha, Lalitpur | +977-9803389703 | uganmaharjan09@gmail.com
+Education
+Th...
+[Notes] Extraction success. Text length: 3100 chars
+[Notes] Attachment saved to DB successfully
+[0mPOST /api/notes/696487db80f49c8160a0c0ad/attachments [32m201[0m 299.710 ms - 4416[0m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+Server running on port 5000
+MongoDB Connected
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+Server running on port 5000
+MongoDB Connected
+[Global] Incoming Request: GET /api/notes
+[0mGET /api/notes [32m200[0m 26.075 ms - 7234[0m
+[Global] Incoming Request: DELETE /api/notes/696487db80f49c8160a0c0ad/attachments/6964a4ff427a45c439f7ff21
+[0mDELETE /api/notes/696487db80f49c8160a0c0ad/attachments/6964a4ff427a45c439f7ff21 [32m200[0m 27.718 ms - 913[0m
+[Global] Incoming Request: POST /api/notes/696487db80f49c8160a0c0ad/attachments
+[Notes] Attachment request for note: 696487db80f49c8160a0c0ad
+[Notes] File received: Ugans_cv.pdf (106961 bytes), at path: uploads/attachments/696487db80f49c8160a0c0ad-1768203604055.pdf
+[Notes] Triggering text extraction for: Ugans_cv.pdf
+[Parser] Attempting to parse PDF: /home/lled/Desktop/new /AI_server/uploads/attachments/696487db80f49c8160a0c0ad-1768203604055.pdf
+[Parser] File read successful. Buffer size: 106961 bytes
+[Parser] PDF text extracted successfully. Total pages: 1, Text length: 3100 chars
+[Parser] Sample text: Ugan Singh Maharjan
+Patan Dhokha, Lalitpur | +977-9803389703 | uganmaharjan09@gmail.com
+Education
+Th...
+[Notes] Extraction success. Text length: 3100 chars
+[Notes] Attachment saved to DB successfully
+[0mPOST /api/notes/696487db80f49c8160a0c0ad/attachments [32m201[0m 311.685 ms - 4416[0m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (4) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+Server running on port 5000
+MongoDB Connected
+[Global] Incoming Request: POST /api/ai/chat
+AI Chat Request Received:
+- Message: What is in the PDF I just attached?"
+- Context Title: Untitled Note
+- Context Attachments Count: 1
+CRITICAL: GEMINI_API_KEY is not set in environment!
+[0mPOST /api/ai/chat [31m500[0m 25.388 ms - 53[0m
+[Global] Incoming Request: POST /api/ai/chat
+AI Chat Request Received:
+- Message: What is in the PDF I just attached?
+- Context Title: Untitled Note
+- Context Attachments Count: 1
+CRITICAL: GEMINI_API_KEY is not set in environment!
+[0mPOST /api/ai/chat [31m500[0m 4.974 ms - 53[0m
+[Global] Incoming Request: POST /api/ai/chat
+AI Chat Request Received:
+- Message: What is in the PDF I just attached?
+- Context Title: Untitled Note
+- Context Attachments Count: 1
+CRITICAL: GEMINI_API_KEY is not set in environment!
+[0mPOST /api/ai/chat [31m500[0m 2.354 ms - 53[0m
+[Global] Incoming Request: GET /api/notes
+[0mGET /api/notes [32m200[0m 20.240 ms - 7234[0m
+[Global] Incoming Request: POST /api/ai/chat
+AI Chat Request Received:
+- Message: whats in the pdf?
+- Context Title: Untitled Note
+- Context Attachments Count: 1
+CRITICAL: GEMINI_API_KEY is not set in environment!
+[0mPOST /api/ai/chat [31m500[0m 5.730 ms - 53[0m
