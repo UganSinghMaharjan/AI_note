@@ -265,11 +265,11 @@ const Sidebar = ({
                 backgroundColor:
                   draggedOverFolder === folder
                     ? "var(--accent-glow)"
-                    : "transparent",
+                    : "rgba(0, 0, 0, 0)",
                 borderColor:
                   draggedOverFolder === folder
                     ? "var(--accent)"
-                    : "transparent",
+                    : "rgba(0, 0, 0, 0)",
                 scale: draggedOverFolder === folder ? 1.01 : 1,
               }}
               transition={{ duration: 0.2 }}
