@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import ReactMarkdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import { Image } from "@tiptap/extension-image";
+import { Link } from "@tiptap/extension-link";
+import { TaskList } from "@tiptap/extension-task-list";
+import { TaskItem } from "@tiptap/extension-task-item";
+import { Placeholder } from "@tiptap/extension-placeholder";
+
 import {
   FaPaperclip,
   FaFilePdf,
@@ -24,6 +32,9 @@ import {
   FaCheck,
   FaPaste,
   FaRobot,
+  FaRedo,
+  FaUndo,
+  FaStrikethrough,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import AIChatPanel from "./AIChatPanel";
@@ -44,49 +55,197 @@ const Editor = ({
   onToggleSidebar,
 }) => {
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
   const [folder, setFolder] = useState("");
   const [showColorPicker, setShowColorPicker] = useState(false);
   const fileInputRef = useRef(null);
-  const textAreaRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showAISidebar, setShowAISidebar] = useState(false);
 
+  // Tiptap Editor Setup
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        orderedList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+      }),
+      TextStyle,
+      Color,
+      Image,
+      Link.configure({
+        openOnClick: true,
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
+      Placeholder.configure({
+        placeholder: "Start typing...",
+      }),
+    ],
+    content: "",
+    onUpdate: ({ editor }) => {
+      // Debounce update in parent effect, but here we just need to ensure we can capture it
+      // Actually we'll use a separate effect to sync editor.getHTML() with 'content' state
+      // but let's just trigger the update logic directly?
+      // Better: Keep local content state mostly for initial load, but rely on editor for current value
+    },
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-sm max-w-none focus:outline-none min-h-[calc(100vh-200px)] " +
+          (darkMode ? "prose-invert" : "") +
+          " prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl " +
+          " prose-p:text-text-muted/80 " +
+          " prose-a:text-accent prose-code:text-accent prose-code:bg-white/5 prose-code:px-1 prose-code:rounded " +
+          " prose-pre:bg-bg-base prose-pre:border prose-pre:border-white/5",
+      },
+    },
+  });
+
+  // Sync Note Data to State & Editor
   useEffect(() => {
     if (note) {
       setTitle(note.title);
-      setContent(note.content);
       setFolder(note.folder || "General");
+      // Only set content if it's different to prevent cursor jumps or re-renders loops
+      // Simple check: if editor is empty or note changed significantly
+      if (editor && note.content !== editor.getHTML()) {
+        // We need to be careful not to overwrite user typing with old data
+        // Ideally checking if note ID changed is safest for full swap
+        // For distinct notes:
+        editor.commands.setContent(note.content || "");
+      }
     }
-  }, [note]);
+  }, [note, editor]);
 
-  // Debounce changes
+  // Debounce Save (triggered by changes in Editor or Title/Folder)
   useEffect(() => {
-    if (!note) return;
+    if (!note || !editor) return;
+
+    const currentContent = editor.getHTML();
+
     if (
       title === note.title &&
-      content === note.content &&
+      currentContent === note.content &&
       folder === (note.folder || "General")
-    )
+    ) {
       return;
+    }
 
     const timeoutId = setTimeout(() => {
-      onUpdateNote({ ...note, title, content, folder });
+      onUpdateNote({
+        ...note,
+        title,
+        content: currentContent,
+        folder,
+      });
     }, 1500);
 
     return () => clearTimeout(timeoutId);
-  }, [title, content, folder]);
+  }, [title, folder, editor?.state.doc.content.size]); // Depend on editor content size or similar to trigger
 
+  // We need to validly track "content changed" for the effect above.
+  // The simplest way with Tiptap + React Effect debounce is to force a re-render on edit
+  // or use a ref. Let's make a manual update handler.
+  const handleEditorUpdate = () => {
+    if (!note || !editor) return;
+    const currentContent = editor.getHTML();
+    onUpdateNote({
+      ...note,
+      title,
+      content: currentContent,
+      folder,
+    });
+  };
+
+  // Actually, let's stick to the previous pattern:
+  // We need a local 'content' state that tracks editor updates?
+  // No, Tiptap manages its own state. We just need to trigger the debounce.
+  // Let's attach onUpdate to editor config above to update a trigger state.
+
+  // Re-define editor with onUpdate to trigger a state change
+  // Note: we can't easily change `useEditor` options dynamically without Remirror logic.
+  // Instead, use `editor.on('update')` in a useEffect.
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateHandler = () => {
+      // This will trigger the debounce effect above if we track a revision counter
+      // Or we can just do the debounced save here directly?
+      // Let's do the debounce here directly to avoid complex state deps
+    };
+
+    // Actually, the simplest way is to just let the user type, and use a timer ref
+    // to save after inactivity.
+
+    let debounceTimer;
+
+    const handleUpdate = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        onUpdateNote({
+          ...note, // Careful: this captured 'note' might be stale?
+          // It is better to rely on refs or functional updates if available,
+          // but here onUpdateNote expects the full object.
+          // We should use the latest title/folder state.
+          title: title, // This title is from closure, might be stale if title changed?
+          // React `useEffect` runs once. `title` is stale.
+          // We need this effect to re-run or use Refs for current state.
+        });
+      }, 1500);
+    };
+
+    // Re-thinking: The standard React pattern
+    // The previous code had `[title, content, folder]` dependency array.
+    // We can replicate that if we have a way to get 'content' out of editor.
+    // Let's add `onUpdate` to `useEditor` that calls `setContent(editor.getHTML())`.
+  }, [editor]); // This logic is getting messy.
+
+  // LET'S GO BACK TO THE PROVEN PATTERN:
+  // 1. `useEditor` with `onUpdate` that sets a local `content` state.
+  // 2. `useEffect` on `[content]` debounces the save.
+
+  const [content, setContent] = useState("");
+
+  // Need to recreate editor if dependencies like onUpdate change? No.
+  // We can't pass `setContent` to `useEditor` easily if we want it stable.
+  // But wait, `useEditor` is stable.
+  // Actually, we can just use `editor.on` in an effect.
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const onUpdate = () => {
+      setContent(editor.getHTML());
+    };
+
+    editor.on("update", onUpdate);
+
+    return () => {
+      editor.off("update", onUpdate);
+    };
+  }, [editor]);
+
+  // Handle Title/Folder inputs
   const handleTitleChange = (e) => setTitle(e.target.value);
-  const handleContentChange = (e) => setContent(e.target.value);
   const handleFolderChange = (e) => setFolder(e.target.value);
 
   const handleFileClick = () => fileInputRef.current?.click();
 
   const handleCopyToClipboard = async () => {
+    if (!editor) return;
     try {
-      await navigator.clipboard.writeText(content);
+      // Get text content for clipboard? Or HTML? usually text.
+      // editor.getText() gives plain text.
+      await navigator.clipboard.writeText(editor.getText());
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -95,26 +254,13 @@ const Editor = ({
   };
 
   const handlePasteFromClipboard = async () => {
+    // Tiptap handles paste natively perfectly fine.
+    // But if we want a button:
+    if (!editor) return;
     try {
       const text = await navigator.clipboard.readText();
       if (!text) return;
-
-      const textarea = textAreaRef.current;
-      if (textarea) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const currentText = textarea.value;
-        const newText =
-          currentText.substring(0, start) + text + currentText.substring(end);
-
-        setContent(newText);
-
-        // Update cursor position
-        setTimeout(() => {
-          textarea.focus();
-          textarea.setSelectionRange(start + text.length, start + text.length);
-        }, 0);
-      }
+      editor.commands.insertContent(text);
     } catch (err) {
       console.error("Failed to read clipboard:", err);
       alert("Could not paste from clipboard. Please allow access.");
@@ -135,29 +281,51 @@ const Editor = ({
     }
   };
 
-  const insertMarkdown = (prefix, suffix = "") => {
-    const textarea = textAreaRef.current;
-    if (!textarea) return;
+  // Toolbar Actions
+  const toggleBold = () => editor?.chain().focus().toggleBold().run();
+  const toggleItalic = () => editor?.chain().focus().toggleItalic().run();
+  const toggleStrike = () => editor?.chain().focus().toggleStrike().run();
+  const toggleCode = () => editor?.chain().focus().toggleCode().run();
+  const toggleHeading = (level) =>
+    editor?.chain().focus().toggleHeading({ level }).run();
+  const toggleBulletList = () =>
+    editor?.chain().focus().toggleBulletList().run();
+  const toggleOrderedList = () =>
+    editor?.chain().focus().toggleOrderedList().run();
+  const toggleTaskList = () => editor?.chain().focus().toggleTaskList().run();
+  const toggleBlockquote = () =>
+    editor?.chain().focus().toggleBlockquote().run();
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const before = text.substring(0, start);
-    const selection = text.substring(start, end);
-    const after = text.substring(end);
+  const setLink = () => {
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("URL", previousUrl);
 
-    const newText = before + prefix + selection + suffix + after;
-    setContent(newText);
+    // cancelled
+    if (url === null) {
+      return;
+    }
 
-    // Restore focus and selection
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-    }, 0);
+    // empty
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+
+      return;
+    }
+
+    // update
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   };
 
-  const insertColor = (color) => {
-    insertMarkdown(`<span style="color: ${color}">`, "</span>");
+  const addImage = () => {
+    const url = window.prompt("Image URL");
+
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
+  const setColor = (color) => {
+    editor.chain().focus().setColor(color).run();
     setShowColorPicker(false);
   };
 
@@ -191,7 +359,6 @@ const Editor = ({
     const now = new Date();
     const diff = now - date;
 
-    // If less than 24 hours, show relative time
     if (diff < 24 * 60 * 60 * 1000 && now.getDate() === date.getDate()) {
       return `Last edited at ${date.toLocaleTimeString([], {
         hour: "numeric",
@@ -199,7 +366,6 @@ const Editor = ({
       })}`;
     }
 
-    // Otherwise show date
     return `Last edited ${date.toLocaleDateString([], {
       month: "short",
       day: "numeric",
@@ -209,6 +375,7 @@ const Editor = ({
   if (!note) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-bg-base relative overflow-hidden">
+        {/* ... (Same empty state as before) ... */}
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none" />
 
         {!isSidebarOpen && (
@@ -239,10 +406,8 @@ const Editor = ({
 
   return (
     <main className="flex-1 flex flex-col h-full bg-bg-base relative overflow-hidden p-4 md:p-8">
-      {/* Background Noise/Pattern */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none" />
 
-      {/* The "Sheet" / Card Container */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -251,7 +416,7 @@ const Editor = ({
       >
         {/* Header Bar */}
         <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-          {/* Meta Inputs */}
+          {/* ... (Same header inputs as before) ... */}
           <div className="flex items-center gap-4">
             {!isSidebarOpen && (
               <button
@@ -290,7 +455,6 @@ const Editor = ({
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAISidebar(true)}
@@ -343,71 +507,88 @@ const Editor = ({
           />
         </div>
 
-        {/* Formatting Toolbar */}
-        <div className="px-6 py-2 flex items-center gap-1 border-y border-white/5 bg-bg-base/50 relative z-20">
-          {[
-            {
-              icon: FaBold,
-              action: () => insertMarkdown("**", "**"),
-              title: "Bold",
-            },
-            {
-              icon: FaItalic,
-              action: () => insertMarkdown("*", "*"),
-              title: "Italic",
-            },
-            {
-              icon: FaHeading,
-              action: () => insertMarkdown("# ", ""),
-              title: "Heading",
-            },
-            { divider: true },
-            {
-              icon: FaCode,
-              action: () => insertMarkdown("`", "`"),
-              title: "Code",
-            },
-            {
-              icon: FaQuoteRight,
-              action: () => insertMarkdown("> ", ""),
-              title: "Quote",
-            },
-            {
-              icon: FaListUl,
-              action: () => insertMarkdown("- ", ""),
-              title: "List",
-            },
-            {
-              icon: FaCheckSquare,
-              action: () => insertMarkdown("- [ ] ", ""),
-              title: "Checkbox",
-            },
-            { divider: true },
-            {
-              icon: FaLink,
-              action: () => insertMarkdown("[", "](url)"),
-              title: "Link",
-            },
-            {
-              icon: FaImage,
-              action: () => insertMarkdown("![alt](", ")"),
-              title: "Image",
-            },
-          ].map((item, i) =>
-            item.divider ? (
-              <div key={i} className="w-[1px] h-4 bg-white/10 mx-2" />
-            ) : (
-              <button
-                key={i}
-                onClick={item.action}
-                className="p-1.5 hover:bg-white/10 rounded text-text-muted hover:text-white transition-colors"
-                title={item.title}
-              >
-                <item.icon size={12} />
-              </button>
-            )
-          )}
+        {/* Toolbar */}
+        <div className="px-6 py-2 flex items-center gap-1 border-y border-white/5 bg-bg-base/50 relative z-20 flex-wrap">
+          <button
+            onClick={toggleBold}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("bold") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Bold"
+          >
+            <FaBold size={12} />
+          </button>
+          <button
+            onClick={toggleItalic}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("italic") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Italic"
+          >
+            <FaItalic size={12} />
+          </button>
+          <button
+            onClick={toggleStrike}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("strike") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Strikethrough"
+          >
+            <FaStrikethrough size={12} />
+          </button>
+          <button
+            onClick={() => toggleHeading(1)}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("heading", { level: 1 }) ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Heading 1"
+          >
+            <FaHeading size={12} />
+          </button>
+
           <div className="w-[1px] h-4 bg-white/10 mx-2" />
+
+          <button
+            onClick={toggleCode}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("code") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Code"
+          >
+            <FaCode size={12} />
+          </button>
+          <button
+            onClick={toggleBlockquote}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("blockquote") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Quote"
+          >
+            <FaQuoteRight size={12} />
+          </button>
+          <button
+            onClick={toggleBulletList}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("bulletList") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Bullet List"
+          >
+            <FaListUl size={12} />
+          </button>
+          {/* Note: TaskList requires extra CSS usually, but we'll try it */}
+          <button
+            onClick={toggleTaskList}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("taskList") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Check List"
+          >
+            <FaCheckSquare size={12} />
+          </button>
+
+          <div className="w-[1px] h-4 bg-white/10 mx-2" />
+
+          <button
+            onClick={setLink}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("link") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Link"
+          >
+            <FaLink size={12} />
+          </button>
+          <button
+            onClick={addImage}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("image") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Image"
+          >
+            <FaImage size={12} />
+          </button>
+
+          <div className="w-[1px] h-4 bg-white/10 mx-2" />
+
           <div className="relative">
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
@@ -437,10 +618,12 @@ const Editor = ({
                     "#bd93f9",
                     "#ff79c6",
                     "#f8f8f2",
+                    "#000000",
+                    "#ffffff",
                   ].map((color) => (
                     <button
                       key={color}
-                      onClick={() => insertColor(color)}
+                      onClick={() => setColor(color)}
                       className="w-6 h-6 rounded-full border border-white/10 hover:scale-110 transition-transform"
                       style={{ backgroundColor: color }}
                       title={color}
@@ -450,41 +633,22 @@ const Editor = ({
               )}
             </AnimatePresence>
           </div>
+
+          <div className="flex-1" />
+          <div className="flex gap-1 text-xs text-text-muted/40 font-mono hidden md:flex">
+            <span>Markdown shortcuts enabled</span>
+          </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex min-h-0">
-          {/* Editor Input */}
-          <div className="flex-1 relative border-r border-white/5 bg-bg-base/20">
-            <textarea
-              ref={textAreaRef}
-              value={content}
-              onChange={handleContentChange}
-              placeholder="Type your markdown here..."
-              className="absolute inset-0 w-full h-full p-6 bg-transparent border-none outline-none resize-none font-mono text-sm leading-relaxed text-text-main/90 placeholder:text-text-muted/20 custom-scrollbar"
-              spellCheck="false"
-            />
+        {/* Tiptap Editor Content */}
+        <div className="flex-1 flex flex-col min-h-0 relative">
+          <div
+            className="absolute inset-0 overflow-y-auto p-6 custom-scrollbar"
+            onClick={() => editor?.commands.focus()}
+          >
+            <EditorContent editor={editor} />
           </div>
 
-          {/* Preview Output */}
-          <div className="flex-1 relative bg-bg-surface">
-            <div className="absolute inset-0 w-full h-full p-6 overflow-y-auto custom-scrollbar">
-              <article
-                className={`prose ${
-                  darkMode ? "prose-invert" : ""
-                } prose-sm max-w-none
-                    prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl
-                    prose-p:text-text-muted/80
-                    prose-a:text-accent prose-code:text-accent prose-code:bg-white/5 prose-code:px-1 prose-code:rounded
-                    prose-pre:bg-bg-base prose-pre:border prose-pre:border-white/5`}
-              >
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                  {content}
-                </ReactMarkdown>
-              </article>
-            </div>
-          </div>
-          {/* AIChatPanel */}
           <AnimatePresence>
             {showAISidebar && (
               <AIChatPanel
@@ -492,7 +656,7 @@ const Editor = ({
                 onClose={() => setShowAISidebar(false)}
                 noteContext={{
                   title,
-                  content,
+                  content: editor?.getHTML() || "",
                   folder,
                   attachments: note.attachments || [],
                 }}

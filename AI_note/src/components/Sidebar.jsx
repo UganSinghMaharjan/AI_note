@@ -408,7 +408,9 @@ const Sidebar = ({
 
                             <p className="text-xs text-text-muted/70 whitespace-nowrap overflow-hidden text-ellipsis font-medium">
                               {note.content
-                                ? note.content.substring(0, 50)
+                                ? note.content
+                                    .replace(/<[^>]*>/g, "")
+                                    .substring(0, 50)
                                 : "No content"}
                             </p>
                             <span className="text-[0.65rem] text-text-muted/40 mt-3 block font-mono tracking-wide">
