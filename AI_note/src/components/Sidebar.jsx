@@ -62,7 +62,7 @@ const Sidebar = ({
 
   const handeNoteReorder = (folderName, reorderedNotesInFolder) => {
     const otherNotes = notes.filter(
-      (n) => (n.folder || "General") !== folderName
+      (n) => (n.folder || "General") !== folderName,
     );
     onReorder([...reorderedNotesInFolder, ...otherNotes]);
   };
@@ -101,7 +101,7 @@ const Sidebar = ({
 
   // Group notes by folder, ensuring all explicit folders AND folders used by notes are represented
   const allFolderNames = Array.from(
-    new Set([...folders, ...(notes || []).map((n) => n.folder || "General")])
+    new Set([...folders, ...(notes || []).map((n) => n.folder || "General")]),
   ).sort((a, b) => {
     if (a === "General") return -1;
     if (b === "General") return 1;
@@ -110,7 +110,7 @@ const Sidebar = ({
 
   const groupedNotes = allFolderNames.reduce((groups, folder) => {
     groups[folder] = (notes || []).filter(
-      (n) => (n.folder || "General") === folder
+      (n) => (n.folder || "General") === folder,
     );
     return groups;
   }, {});
@@ -121,8 +121,8 @@ const Sidebar = ({
       groupedNotes[f]?.some(
         (n) =>
           (n.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (n.content || "").toLowerCase().includes(searchQuery.toLowerCase())
-      )
+          (n.content || "").toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
   );
 
   const handleDataManagementClick = () => {
@@ -144,7 +144,7 @@ const Sidebar = ({
   const getProfilePicture = (picture) => {
     if (!picture) return "https://ui-avatars.com/api/?name=" + user.name;
     if (picture.startsWith("http")) return picture;
-    return `http://localhost:5000${picture}?t=${new Date().getTime()}`;
+    return `${picture}?t=${new Date().getTime()}`;
   };
 
   const getFilteredNotes = (folder) => {
@@ -154,7 +154,7 @@ const Sidebar = ({
     return notesInFolder.filter(
       (n) =>
         (n.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (n.content || "").toLowerCase().includes(searchQuery.toLowerCase())
+        (n.content || "").toLowerCase().includes(searchQuery.toLowerCase()),
     );
   };
 
@@ -417,7 +417,7 @@ const Sidebar = ({
                                 {
                                   month: "short",
                                   day: "numeric",
-                                }
+                                },
                               )}
                             </span>
                           </Reorder.Item>
