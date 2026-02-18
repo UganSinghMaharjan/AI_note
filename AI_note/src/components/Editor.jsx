@@ -662,11 +662,24 @@ const Editor = ({
                     <button
                       key={color}
                       onClick={() => setColor(color)}
-                      className="w-5 h-5 rounded-md border border-glass-border hover:scale-110 transition-transform"
+                      className="w-5 h-5 rounded-md border border-glass-border hover:scale-110 transition-transform shadow-sm"
                       style={{ backgroundColor: color }}
                       title={color}
                     />
                   ))}
+
+                  {/* Native Color Picker */}
+                  <label
+                    className="w-5 h-5 rounded-md border border-glass-border hover:scale-110 transition-transform shadow-sm flex items-center justify-center cursor-pointer bg-gradient-to-br from-red-500 via-green-500 to-blue-500"
+                    title="Custom Color"
+                  >
+                    <input
+                      type="color"
+                      className="opacity-0 w-full h-full cursor-pointer absolute"
+                      onChange={(e) => setColor(e.target.value)}
+                    />
+                    <FaPalette className="text-white text-[8px] drop-shadow-md" />
+                  </label>
                 </motion.div>
               )}
             </AnimatePresence>
