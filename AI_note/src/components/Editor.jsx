@@ -56,6 +56,7 @@ const Editor = ({
 }) => {
   const [title, setTitle] = useState("");
   const [folder, setFolder] = useState("");
+  const [content, setContent] = useState("");
   const [showColorPicker, setShowColorPicker] = useState(false);
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -143,13 +144,13 @@ const Editor = ({
       onUpdateNote({
         ...note,
         title,
-        content: currentContent,
+        content,
         folder,
       });
     }, 1500);
 
     return () => clearTimeout(timeoutId);
-  }, [title, folder, editor?.state.doc.content.size]); // Depend on editor content size or similar to trigger
+  }, [title, folder, content]); // Depend on title, folder, and content state
 
   // We need to validly track "content changed" for the effect above.
   // The simplest way with Tiptap + React Effect debounce is to force a re-render on edit
@@ -212,8 +213,6 @@ const Editor = ({
   // LET'S GO BACK TO THE PROVEN PATTERN:
   // 1. `useEditor` with `onUpdate` that sets a local `content` state.
   // 2. `useEffect` on `[content]` debounces the save.
-
-  const [content, setContent] = useState("");
 
   // Need to recreate editor if dependencies like onUpdate change? No.
   // We can't pass `setContent` to `useEditor` easily if we want it stable.
@@ -415,19 +414,19 @@ const Editor = ({
         className="flex-1 flex flex-col bg-bg-surface border border-white/10 rounded-2xl shadow-2xl relative z-10 overflow-hidden max-w-[95%] mx-auto w-full"
       >
         {/* Header Bar */}
-        <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+        <div className="px-6 py-4 border-b border-glass-border flex items-center justify-between bg-black/[0.01] dark:bg-white/[0.02]">
           {/* ... (Same header inputs as before) ... */}
           <div className="flex items-center gap-4">
             {!isSidebarOpen && (
               <button
                 onClick={onToggleSidebar}
-                className="p-1.5 mr-2 bg-white/5 border border-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+                className="p-1.5 mr-2 bg-black/5 dark:bg-white/5 border border-glass-border rounded-lg text-text-muted hover:text-text-main transition-colors"
                 title="Open Sidebar"
               >
                 <FaFolder size={14} />
               </button>
             )}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-bg-base rounded-md border border-white/5 hover:border-accent/30 transition-colors group">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-bg-base/50 rounded-md border border-glass-border hover:border-accent/30 transition-colors group">
               <FaFolder className="text-text-muted/50 group-hover:text-accent transition-colors text-xs" />
               <input
                 type="text"
@@ -438,7 +437,7 @@ const Editor = ({
               />
             </div>
 
-            <div className="h-4 w-[1px] bg-white/10"></div>
+            <div className="h-4 w-[1px] bg-glass-border mx-1"></div>
 
             <div className="flex items-center gap-2 text-xs text-text-muted font-mono">
               {saveStatus === "saving" ? (
@@ -458,21 +457,21 @@ const Editor = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAISidebar(true)}
-              className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+              className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-text-muted hover:text-text-main transition-colors"
               title="Ask AI"
             >
               <FaRobot size={14} />
             </button>
             <button
               onClick={handlePasteFromClipboard}
-              className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+              className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-text-muted hover:text-text-main transition-colors"
               title="Paste from Clipboard"
             >
               <FaPaste size={14} />
             </button>
             <button
               onClick={handleCopyToClipboard}
-              className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+              className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-text-muted hover:text-text-main transition-colors"
               title="Copy Text to Clipboard"
             >
               {copied ? (
@@ -484,7 +483,7 @@ const Editor = ({
             <button
               onClick={handleFileClick}
               disabled={isUploading}
-              className="p-2 hover:bg-white/5 rounded-lg text-text-muted hover:text-white transition-colors"
+              className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-text-muted hover:text-text-main transition-colors"
               title="Attach File"
             >
               {isUploading ? (
@@ -508,7 +507,7 @@ const Editor = ({
         </div>
 
         {/* Toolbar */}
-        <div className="px-6 py-2 flex items-center gap-1 border-y border-white/5 bg-bg-base/50 relative z-20 flex-wrap">
+        <div className="px-6 py-2 flex items-center gap-1 border-y border-glass-border bg-bg-base/30 relative z-20 flex-wrap">
           <button
             onClick={toggleBold}
             className={`p-1.5 rounded transition-colors ${editor?.isActive("bold") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
@@ -525,7 +524,7 @@ const Editor = ({
           </button>
           <button
             onClick={toggleStrike}
-            className={`p-1.5 rounded transition-colors ${editor?.isActive("strike") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("strike") ? "bg-accent/20 text-accent" : "hover:bg-black/5 dark:hover:bg-white/10 text-text-muted hover:text-text-main"}`}
             title="Strikethrough"
           >
             <FaStrikethrough size={12} />
@@ -535,7 +534,21 @@ const Editor = ({
             className={`p-1.5 rounded transition-colors ${editor?.isActive("heading", { level: 1 }) ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
             title="Heading 1"
           >
-            <FaHeading size={12} />
+            <span className="text-[13px] font-bold">H1</span>
+          </button>
+          <button
+            onClick={() => toggleHeading(2)}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("heading", { level: 2 }) ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Heading 2"
+          >
+            <span className="text-[13px] font-bold">H2</span>
+          </button>
+          <button
+            onClick={() => toggleHeading(3)}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("heading", { level: 3 }) ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            title="Heading 3"
+          >
+            <span className="text-[13px] font-bold">H3</span>
           </button>
 
           <div className="w-[1px] h-4 bg-white/10 mx-2" />
@@ -581,21 +594,21 @@ const Editor = ({
           </button>
           <button
             onClick={addImage}
-            className={`p-1.5 rounded transition-colors ${editor?.isActive("image") ? "bg-white/20 text-white" : "hover:bg-white/10 text-text-muted hover:text-white"}`}
+            className={`p-1.5 rounded transition-colors ${editor?.isActive("image") ? "bg-accent/20 text-accent" : "hover:bg-black/5 dark:hover:bg-white/10 text-text-muted hover:text-text-main"}`}
             title="Image"
           >
             <FaImage size={12} />
           </button>
 
-          <div className="w-[1px] h-4 bg-white/10 mx-2" />
+          <div className="w-[1px] h-4 bg-glass-border mx-2" />
 
           <div className="relative">
             <button
               onClick={() => setShowColorPicker(!showColorPicker)}
-              className={`p-1.5 hover:bg-white/10 rounded transition-colors ${
+              className={`p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded transition-colors ${
                 showColorPicker
-                  ? "bg-white/10 text-accent"
-                  : "text-text-muted hover:text-white"
+                  ? "bg-accent/20 text-accent"
+                  : "text-text-muted hover:text-text-main"
               }`}
               title="Text Color"
             >
@@ -607,24 +620,49 @@ const Editor = ({
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute top-full left-0 mt-2 p-2 bg-bg-surface border border-white/10 rounded-xl shadow-xl flex gap-2 w-max z-50"
+                  className="absolute top-full left-0 mt-2 p-3 bg-bg-surface border border-white/10 rounded-xl shadow-xl grid grid-cols-6 gap-2 w-[184px] z-50"
                 >
                   {[
-                    "#ff5555",
-                    "#ffb86c",
-                    "#f1fa8c",
-                    "#50fa7b",
-                    "#8be9fd",
-                    "#bd93f9",
-                    "#ff79c6",
-                    "#f8f8f2",
+                    // Row 1 (Vibrant)
+                    "#FF0000",
+                    "#FF8C00",
+                    "#FFD700",
+                    "#00C853",
+                    "#00BCD4",
+                    "#2196F3",
+                    // Row 2 (Deep)
+                    "#AA0000",
+                    "#E65100",
+                    "#FBC02D",
+                    "#1B5E20",
+                    "#006064",
+                    "#0D47A1",
+                    // Row 3 (Soft)
+                    "#FF8A80",
+                    "#FFCC80",
+                    "#FFF59D",
+                    "#A5D6A7",
+                    "#80DEEA",
+                    "#90CAF9",
+                    // Row 4 (Dracula/Custom)
+                    "#FF5555",
+                    "#FFB86C",
+                    "#F1FA8C",
+                    "#50FA7B",
+                    "#8BE9FD",
+                    "#BD93F9",
+                    // Row 5 (Muted/Dark)
+                    "#FF79C6",
+                    "#6272A4",
+                    "#44475A",
+                    "#F8F8F2",
+                    "#AEB9DF",
                     "#000000",
-                    "#ffffff",
                   ].map((color) => (
                     <button
                       key={color}
                       onClick={() => setColor(color)}
-                      className="w-6 h-6 rounded-full border border-white/10 hover:scale-110 transition-transform"
+                      className="w-5 h-5 rounded-md border border-glass-border hover:scale-110 transition-transform"
                       style={{ backgroundColor: color }}
                       title={color}
                     />
@@ -641,9 +679,9 @@ const Editor = ({
         </div>
 
         {/* Tiptap Editor Content */}
-        <div className="flex-1 flex flex-col min-h-0 relative">
+        <div className="flex-1 flex flex-row min-h-0 relative">
           <div
-            className="absolute inset-0 overflow-y-auto p-6 custom-scrollbar"
+            className="flex-1 overflow-y-auto p-6 custom-scrollbar"
             onClick={() => editor?.commands.focus()}
           >
             <EditorContent editor={editor} />

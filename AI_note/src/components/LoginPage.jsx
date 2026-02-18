@@ -41,7 +41,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Authentication failed. Please try again."
+          "Authentication failed. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -59,7 +59,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
           y: [0, -30, 0],
         }}
         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-accent/10 blur-[120px]"
+        className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-accent/20 dark:bg-accent/10 blur-[120px]"
       />
       <motion.div
         animate={{
@@ -69,19 +69,19 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
           y: [0, 60, 0],
         }}
         transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[120px]"
+        className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/20 dark:bg-blue-500/10 blur-[120px]"
       />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative z-10 w-full max-w-lg glass-panel rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
+        className="relative z-10 w-full max-w-lg glass-panel rounded-3xl border border-glass-border overflow-hidden shadow-2xl"
       >
         <div className="p-8 md:p-12">
           {onBack && (
             <button
               onClick={onBack}
-              className="mb-8 flex items-center gap-2 text-text-muted hover:text-white transition-colors group"
+              className="mb-8 flex items-center gap-2 text-text-muted hover:text-text-main transition-colors group"
             >
               <HiArrowLeft className="group-hover:-translate-x-1 transition-transform" />
               Back
@@ -129,7 +129,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="John Doe"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-white/[0.08] transition-all"
+                      className="w-full bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-black/[0.08] dark:focus:bg-white/[0.08] transition-all text-text-main"
                     />
                   </div>
                 </motion.div>
@@ -149,7 +149,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="name@example.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-white/[0.08] transition-all"
+                  className="w-full bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-black/[0.08] dark:focus:bg-white/[0.08] transition-all text-text-main"
                 />
               </div>
             </div>
@@ -167,7 +167,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="••••••••"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-white/[0.08] transition-all"
+                  className="w-full bg-black/5 dark:bg-white/5 border border-glass-border rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-accent/50 focus:bg-black/[0.08] dark:focus:bg-white/[0.08] transition-all text-text-main"
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-accent hover:bg-accent-hover disabled:bg-accent/50 text-[#1a1a1a] rounded-xl font-bold transition-all shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
+              className="w-full py-4 bg-accent hover:bg-accent-hover disabled:bg-accent/50 text-white dark:text-[#1a1a1a] rounded-xl font-bold transition-all shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -186,7 +186,7 @@ const LoginPage = ({ onLoginSuccess, onLoginError, onBack, darkMode }) => {
 
           <div className="relative my-8 text-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
+              <div className="w-full border-t border-glass-border"></div>
             </div>
             <span className="relative px-4 bg-bg-base text-text-muted text-sm uppercase tracking-widest font-semibold">
               Or continue with

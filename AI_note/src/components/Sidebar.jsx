@@ -163,12 +163,12 @@ const Sidebar = ({
       {/* ... header and notes ... */}
       <div className="p-6 pb-4">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-white to-white/50 bg-clip-text text-transparent tracking-tight">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-text-main via-text-main to-text-main/50 bg-clip-text text-transparent tracking-tight">
             AI Notes
           </h1>
           <button
             onClick={onClose}
-            className="p-2 text-text-muted hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+            className="p-2 text-text-muted hover:text-text-main rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             title="Collapse Sidebar"
           >
             <FaTimes size={16} />
@@ -178,7 +178,7 @@ const Sidebar = ({
         <div className="flex flex-col gap-3">
           <button
             onClick={() => onAddNote("General")}
-            className="w-full py-3 px-4 bg-accent/90 hover:bg-accent text-[#1a1a1a] rounded-xl font-semibold flex items-center justify-center gap-2 shadow-[0_0_20px_theme(colors.accent-glow)] hover:shadow-[0_0_30px_theme(colors.accent-glow)] hover:-translate-y-0.5 transition-all duration-300 group"
+            className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white dark:text-[#1a1a1a] rounded-xl font-semibold flex items-center justify-center gap-2 shadow-[0_0_20px_var(--accent-glow)] hover:shadow-[0_0_30px_var(--accent-glow)] hover:-translate-y-0.5 transition-all duration-300 group"
           >
             <FaPlus className="text-sm group-hover:rotate-90 transition-transform duration-300" />
             <span>New Note</span>
@@ -186,7 +186,7 @@ const Sidebar = ({
 
           <button
             onClick={() => setIsAddingFolder(true)}
-            className="w-full py-2.5 px-4 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium flex items-center justify-center gap-2 border border-white/5 hover:border-white/10 transition-all duration-300"
+            className="w-full py-2.5 px-4 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-text-main rounded-xl font-medium flex items-center justify-center gap-2 border border-glass-border transition-all duration-300"
           >
             <FaPlus className="text-xs opacity-50" />
             <span className="text-sm">New Group</span>
@@ -196,14 +196,14 @@ const Sidebar = ({
 
       {/* Search */}
       <div className="px-6 pb-4">
-        <div className="bg-white/5 rounded-xl p-3 flex items-center gap-3 border border-white/5 focus-within:bg-white/10 focus-within:border-white/10 transition-all duration-300">
+        <div className="bg-black/5 dark:bg-white/5 rounded-xl p-3 flex items-center gap-3 border border-glass-border focus-within:bg-black/10 dark:focus-within:bg-white/10 focus-within:border-accent/30 transition-all duration-300">
           <FaSearch className="text-text-muted/60 text-sm" />
           <input
             type="text"
             placeholder="Search notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent outline-none placeholder:text-text-muted/40 text-sm font-medium"
+            className="w-full bg-transparent outline-none placeholder:text-text-muted/40 text-sm font-medium text-text-main"
           />
           {searchQuery && (
             <button
@@ -434,7 +434,7 @@ const Sidebar = ({
         )}
       </div>
       {/* Settings/Profile Footer */}
-      <div className="p-4 border-t border-white/5 flex items-center justify-between gap-4 bg-white/[0.02]">
+      <div className="p-4 border-t border-glass-border flex items-center justify-between gap-4 bg-black/[0.02] dark:bg-white/[0.02]">
         <button
           onClick={handleProfileClick}
           className="flex items-center gap-3 group px-2 py-1.5 rounded-xl hover:bg-white/5 transition-all duration-300"
@@ -443,12 +443,12 @@ const Sidebar = ({
             <img
               src={getProfilePicture(user.picture)}
               alt={user.name}
-              className="w-10 h-10 rounded-xl object-cover border border-white/10 group-hover:border-accent/50 transition-colors shadow-lg"
+              className="w-10 h-10 rounded-xl object-cover border border-glass-border group-hover:border-accent/50 transition-colors shadow-lg"
             />
-            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-[#0a0a0a] rounded-full" />
+            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-bg-base rounded-full" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-bold text-white group-hover:text-accent transition-colors">
+            <p className="text-sm font-bold text-text-main group-hover:text-accent transition-colors">
               {user.name}
             </p>
             <p className="text-[10px] text-text-muted font-medium uppercase tracking-wider">
